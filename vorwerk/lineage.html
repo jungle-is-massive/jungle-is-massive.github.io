@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Bread Family Tree | Thermomix®</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#009a3b; --gd:#113c2b; --gm:#006e2c; --lime:#95c11c;
+  --teal:#00777b; --ch:#4b4a4b; --grey:#6d6e71; --lg:#b1b2b3;
+  --bg:#f4f3ef; --w:#ffffff;
+  --sans:'Source Sans 3',Arial,sans-serif;
+  --serif:'Merriweather',Georgia,serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--sans)}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--gd);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100}
+.nav-logo{font-family:var(--serif);font-size:12px;font-weight:700;color:#fff;letter-spacing:.1em;text-transform:uppercase}
+.nav-logo em{color:var(--lime);font-style:normal}
+.nav-center{font-size:13px;color:rgba(255,255,255,.7);font-weight:300;letter-spacing:.04em}
+.nav-tabs{display:flex;gap:4px}
+.nav-tab{font-size:11px;font-weight:700;color:rgba(255,255,255,.6);background:transparent;border:1px solid rgba(255,255,255,.18);border-radius:2px;padding:5px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:all .2s}
+.nav-tab.active,.nav-tab:hover{background:var(--lime);color:var(--gd);border-color:var(--lime)}
+
+/* ── VIEWS ── */
+#view-tree,#view-map{position:fixed;inset:56px 0 48px 0;display:none}
+#view-tree.active,#view-map.active{display:flex}
+
+/* ── TREE VIEW ── */
+#view-tree{flex-direction:row}
+#tree-sidebar{width:300px;flex-shrink:0;background:var(--w);border-right:.5px solid rgba(0,0,0,.1);display:flex;flex-direction:column;overflow:hidden}
+#tree-search-wrap{padding:16px;border-bottom:.5px solid rgba(0,0,0,.08)}
+#tree-search{width:100%;border:1.5px solid rgba(0,0,0,.12);border-radius:3px;padding:8px 12px;font-family:var(--sans);font-size:13px;color:var(--ch);background:#fafaf8;outline:none;transition:border-color .2s}
+#tree-search:focus{border-color:var(--g)}
+#tree-search::placeholder{color:var(--lg)}
+#bread-list{flex:1;overflow-y:auto;padding:8px 0}
+.bread-item{padding:10px 16px;cursor:pointer;border-left:3px solid transparent;transition:all .18s;display:flex;align-items:center;gap:10px}
+.bread-item:hover{background:#f0f7f2;border-left-color:var(--g)}
+.bread-item.selected{background:#e6f5ed;border-left-color:var(--g)}
+.bread-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.bread-item-name{font-size:13px;font-weight:600;color:var(--ch)}
+.bread-item-family{font-size:10px;color:var(--lg);text-transform:uppercase;letter-spacing:.06em}
+
+#tree-main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+#tree-canvas{flex:1;overflow:hidden;position:relative}
+#tree-svg{width:100%;height:100%}
+
+/* Lineage panel */
+#lineage-panel{
+  position:absolute;top:16px;right:16px;width:280px;
+  background:var(--w);border-top:3px solid var(--g);
+  border-radius:0 0 4px 4px;
+  box-shadow:0 4px 32px rgba(17,60,43,.13);
+  display:none;overflow:hidden;
+  max-height:calc(100% - 32px);overflow-y:auto;
+}
+#lp-img{width:100%;height:130px;object-fit:cover;display:block}
+#lp-img-bg{width:100%;height:130px;background:#e4ede7;display:flex;align-items:center;justify-content:center}
+#lp-body{padding:14px 16px 18px}
+#lp-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em}
+#lp-name{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--gd);line-height:1.2;margin-bottom:2px}
+#lp-origin{font-size:10px;color:var(--lg);text-transform:uppercase;letter-spacing:.09em;font-weight:600;margin-bottom:10px}
+#lp-desc{font-size:12.5px;color:var(--grey);line-height:1.65;border-top:.5px solid #eae9e5;padding-top:10px}
+
+.lp-section{margin-top:14px;border-top:.5px solid #eae9e5;padding-top:12px}
+.lp-section-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--lg);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.lp-chain{display:flex;flex-direction:column;gap:4px}
+.lp-ancestor,.lp-descendant{
+  font-size:12px;font-weight:600;color:var(--gm);
+  background:#f0f7f2;border:1px solid #c8e6d2;
+  border-radius:3px;padding:5px 10px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:background .15s;
+}
+.lp-ancestor:hover,.lp-descendant:hover{background:#d6f0e0}
+.lp-ancestor{color:var(--gd);background:#e6f0ec;border-color:#aaceba}
+.lp-ancestor::before{content:"↑ "}
+.lp-descendant::before{content:"↓ "}
+
+#lp-remix-btn{
+  margin-top:14px;width:100%;
+  background:var(--g);color:#fff;
+  font-family:var(--sans);font-size:12px;font-weight:700;
+  border:none;padding:11px 16px;border-radius:3px;cursor:pointer;
+  letter-spacing:.07em;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .2s;
+}
+#lp-remix-btn:hover{background:var(--gm)}
+#lp-recipe-link{display:none;margin-top:8px}
+#lp-recipe-link a{
+  display:inline-flex;align-items:center;gap:6px;
+  color:var(--g);font-size:12px;font-weight:600;
+  text-decoration:none;border-bottom:1px solid rgba(0,154,59,.3);
+  padding-bottom:1px;transition:color .15s;
+}
+#lp-recipe-link a:hover{color:var(--gm)}
+
+/* ── TREE SVG nodes ── */
+.t-node{cursor:pointer}
+.t-node circle{transition:r .2s,filter .2s}
+.t-node:hover circle{filter:brightness(1.12)}
+.t-node.selected circle{stroke:#fff;stroke-width:3}
+.t-label{font-family:var(--sans);font-size:11px;font-weight:700;fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.t-link{fill:none;stroke:#c5cac5;stroke-width:1.5;stroke-linecap:round}
+.t-link.highlight{stroke:var(--g);stroke-width:2.5}
+.t-link.highlight-anc{stroke:var(--gd);stroke-width:2;stroke-dasharray:5,3}
+
+/* era labels */
+.era-label{font-family:var(--serif);font-size:11px;font-style:italic;fill:rgba(107,110,113,.45);text-anchor:start}
+
+/* ── MAP VIEW ── */
+#view-map{background:#eef2ee;align-items:stretch}
+#map-svg-wrap{flex:1;position:relative}
+#map-svg{width:100%;height:100%}
+.country-path{fill:#dce8dc;stroke:#b8cbb8;stroke-width:.5;transition:fill .2s}
+.country-path:hover{fill:#c8ddc8}
+.map-node{cursor:pointer}
+.map-node circle{filter:drop-shadow(0 2px 4px rgba(0,0,0,.18))}
+.map-arc{fill:none;stroke:var(--g);stroke-width:1.5;opacity:.5;stroke-dasharray:4,3}
+.map-arc.active{opacity:1;stroke-width:2.5;stroke-dasharray:none}
+.map-label{font-family:var(--sans);font-size:10px;fill:#fff;text-anchor:middle;dominant-baseline:central;font-weight:700;pointer-events:none}
+#map-tooltip{
+  position:absolute;background:var(--w);border-top:3px solid var(--g);
+  border-radius:0 0 4px 4px;padding:12px 14px;
+  box-shadow:0 4px 20px rgba(17,60,43,.15);
+  pointer-events:none;opacity:0;transition:opacity .2s;
+  min-width:180px;z-index:50;
+}
+#map-tooltip h3{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gd);margin-bottom:2px}
+#map-tooltip p{font-size:12px;color:var(--grey);line-height:1.5}
+#map-tooltip .mt-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--g);margin-bottom:5px}
+
+/* ── REMIX MODAL ── */
+#remix-overlay{
+  position:fixed;inset:0;background:rgba(17,60,43,.55);
+  backdrop-filter:blur(3px);z-index:200;
+  display:none;align-items:center;justify-content:center;
+}
+#remix-overlay.open{display:flex}
+#remix-modal{
+  background:var(--w);width:520px;max-width:95vw;
+  border-top:4px solid var(--lime);border-radius:0 0 6px 6px;
+  box-shadow:0 24px 64px rgba(0,0,0,.22);overflow:hidden;
+}
+#remix-header{background:var(--gd);padding:20px 24px;display:flex;align-items:flex-start;justify-content:space-between}
+#remix-header h2{font-family:var(--serif);font-size:18px;font-weight:700;color:#fff;line-height:1.3}
+#remix-header p{font-size:12px;color:rgba(255,255,255,.65);margin-top:4px;font-weight:300}
+#remix-close{background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:0;line-height:1;margin-left:16px;flex-shrink:0}
+#remix-close:hover{color:#fff}
+#remix-body{padding:22px 24px}
+.rm-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--lg);margin-bottom:6px}
+.rm-input{width:100%;border:1.5px solid rgba(0,0,0,.14);border-radius:3px;padding:9px 12px;font-family:var(--sans);font-size:14px;color:var(--ch);background:#fafaf8;outline:none;transition:border-color .2s;margin-bottom:16px}
+.rm-input:focus{border-color:var(--g)}
+.rm-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.rm-col{}
+.rm-select{width:100%;border:1.5px solid rgba(0,0,0,.14);border-radius:3px;padding:9px 12px;font-family:var(--sans);font-size:13px;color:var(--ch);background:#fafaf8;outline:none;cursor:pointer}
+#remix-parent-display{background:#f0f7f2;border:1px solid #c8e6d2;border-radius:3px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--gm);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.rm-textarea{width:100%;border:1.5px solid rgba(0,0,0,.14);border-radius:3px;padding:9px 12px;font-family:var(--sans);font-size:13px;color:var(--ch);background:#fafaf8;outline:none;resize:none;height:72px;margin-bottom:16px;transition:border-color .2s}
+.rm-textarea:focus{border-color:var(--g)}
+.rm-footer{display:flex;gap:10px;justify-content:flex-end}
+.rm-cancel{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--grey);background:none;border:1.5px solid rgba(0,0,0,.14);border-radius:3px;padding:10px 18px;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;transition:all .15s}
+.rm-cancel:hover{border-color:var(--ch);color:var(--ch)}
+.rm-submit{font-family:var(--sans);font-size:12px;font-weight:700;color:#fff;background:var(--g);border:none;border-radius:3px;padding:10px 22px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:7px;transition:background .2s}
+.rm-submit:hover{background:var(--gm)}
+
+/* Result state */
+#remix-result{padding:24px;display:none;text-align:center}
+#remix-result .rr-icon{font-size:40px;margin-bottom:12px}
+#remix-result h3{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--gd);margin-bottom:6px}
+#remix-result p{font-size:13px;color:var(--grey);line-height:1.6;margin-bottom:16px}
+.rr-bread-card{background:#f0f7f2;border:1.5px solid #c8e6d2;border-radius:4px;padding:14px 16px;margin-bottom:16px;text-align:left}
+.rr-bread-card h4{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gd);margin-bottom:4px}
+.rr-bread-card p{font-size:12px;color:var(--grey);line-height:1.55}
+.rr-actions{display:flex;gap:8px;justify-content:center}
+.rr-btn{font-family:var(--sans);font-size:12px;font-weight:700;padding:9px 18px;border-radius:3px;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;border:none;transition:all .2s}
+.rr-btn.primary{background:var(--g);color:#fff}.rr-btn.primary:hover{background:var(--gm)}
+.rr-btn.secondary{background:none;border:1.5px solid rgba(0,0,0,.15);color:var(--ch)}.rr-btn.secondary:hover{border-color:var(--g);color:var(--g)}
+
+/* ── FOOTER ── */
+footer{position:fixed;bottom:0;left:0;right:0;height:48px;background:var(--g);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100}
+.ft-text{font-size:12px;color:rgba(255,255,255,.8);font-weight:300}
+.ft-text strong{font-weight:700;color:#fff}
+.ft-cta{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--gd);background:var(--w);border:none;padding:7px 18px;border-radius:2px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;display:inline-block;transition:background .15s}
+.ft-cta:hover{background:var(--lime)}
+
+/* ── EMPTY STATE ── */
+#tree-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:1;transition:opacity .3s}
+#tree-empty.hidden{opacity:0}
+#tree-empty svg{opacity:.12;margin-bottom:16px}
+#tree-empty p{font-family:var(--serif);font-size:15px;font-style:italic;color:var(--grey);text-align:center;line-height:1.7;max-width:280px}
+
+/* ── SCROLL STYLES ── */
+#bread-list::-webkit-scrollbar{width:4px}
+#bread-list::-webkit-scrollbar-track{background:transparent}
+#bread-list::-webkit-scrollbar-thumb{background:#d0d0cc;border-radius:2px}
+#lineage-panel::-webkit-scrollbar{width:3px}
+#lineage-panel::-webkit-scrollbar-thumb{background:#d0d0cc;border-radius:2px}
+
+/* badge pill */
+.era-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px;text-transform:uppercase;letter-spacing:.07em;background:#e6f5ed;color:#006e2c;margin-left:6px}
+
+/* animate in */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+#lineage-panel{animation:fadeUp .25s ease both}
+
+/* user bread highlight */
+.user-node circle{stroke:var(--lime);stroke-width:3;stroke-dasharray:5,3}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Vorwerk <em>®</em></div>
+  <div class="nav-center">The Bread Family Tree</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('tree')">Family Tree</button>
+    <button class="nav-tab" onclick="switchView('map')">World Map</button>
+  </div>
+</nav>
+
+<!-- TREE VIEW -->
+<div id="view-tree" class="active">
+  <div id="tree-sidebar">
+    <div id="tree-search-wrap">
+      <input id="tree-search" type="text" placeholder="Search breads…" oninput="filterBreads(this.value)">
+    </div>
+    <div id="bread-list"></div>
+  </div>
+
+  <div id="tree-main">
+    <div id="tree-canvas">
+      <svg id="tree-svg"></svg>
+      <div id="tree-empty">
+        <svg width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="55" r="22" fill="none" stroke="#009a3b" stroke-width="3"/><line x1="40" y1="10" x2="40" y2="33" stroke="#009a3b" stroke-width="3"/><line x1="16" y1="22" x2="40" y2="33" stroke="#009a3b" stroke-width="2"/><line x1="64" y1="22" x2="40" y2="33" stroke="#009a3b" stroke-width="2"/></svg>
+        <p>Select a bread from the list to explore its full family tree</p>
+      </div>
+      <div id="lineage-panel">
+        <div id="lp-img-bg"><img id="lp-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover"/></div>
+        <div id="lp-body">
+          <div id="lp-tag"></div>
+          <div id="lp-name"></div>
+          <div id="lp-origin"></div>
+          <p id="lp-desc"></p>
+          <div class="lp-section" id="lp-ancestors-wrap">
+            <div class="lp-section-label">⬆ Ancestors</div>
+            <div class="lp-chain" id="lp-ancestors"></div>
+          </div>
+          <div class="lp-section" id="lp-descendants-wrap">
+            <div class="lp-section-label">⬇ Descendants</div>
+            <div class="lp-chain" id="lp-descendants"></div>
+          </div>
+          <div class="lp-section">
+            <div id="lp-recipe-link"><a href="#" target="_blank" rel="noopener">↗ Make this on Cookidoo®</a></div>
+          </div>
+          <button id="lp-remix-btn" onclick="openRemix()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Remix this bread
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAP VIEW -->
+<div id="view-map">
+  <div id="map-svg-wrap">
+    <svg id="map-svg"></svg>
+    <div id="map-tooltip">
+      <div class="mt-tag" id="mt-tag"></div>
+      <h3 id="mt-name"></h3>
+      <p id="mt-desc"></p>
+    </div>
+  </div>
+</div>
+
+<!-- REMIX MODAL -->
+<div id="remix-overlay" onclick="if(event.target===this)closeRemix()">
+  <div id="remix-modal">
+    <div id="remix-header">
+      <div>
+        <h2>Remix this bread</h2>
+        <p>Every new bread starts somewhere. What will yours be?</p>
+      </div>
+      <button id="remix-close" onclick="closeRemix()">✕</button>
+    </div>
+
+    <div id="remix-body">
+      <div class="rm-label">Starting from</div>
+      <div id="remix-parent-display">
+        <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="#009a3b"/></svg>
+        <span id="remix-parent-name">—</span>
+      </div>
+
+      <div class="rm-label">Your bread's name</div>
+      <input class="rm-input" id="remix-name" type="text" placeholder="e.g. Miso Sourdough, Chilli Focaccia…">
+
+      <div class="rm-row">
+        <div class="rm-col">
+          <div class="rm-label">Origin region</div>
+          <select class="rm-select" id="remix-region">
+            <option value="">Choose a region…</option>
+            <option>Western Europe</option><option>Eastern Europe</option>
+            <option>Middle East</option><option>South Asia</option>
+            <option>East Asia</option><option>Africa</option>
+            <option>North America</option><option>Latin America</option>
+            <option>Anywhere / Global</option>
+          </select>
+        </div>
+        <div class="rm-col">
+          <div class="rm-label">Key twist</div>
+          <select class="rm-select" id="remix-twist">
+            <option value="">What makes it different…</option>
+            <option>A new flour (e.g. teff, einkorn)</option>
+            <option>Unexpected flavour (spice, fruit)</option>
+            <option>Different cooking method</option>
+            <option>Fusion of two traditions</option>
+            <option>Adapted for Thermomix</option>
+            <option>Dietary adaptation (GF, vegan)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="rm-label">Describe your bread (optional)</div>
+      <textarea class="rm-textarea" id="remix-desc" placeholder="What does it taste like? What makes it yours?"></textarea>
+
+      <div class="rm-footer">
+        <button class="rm-cancel" onclick="closeRemix()">Cancel</button>
+        <button class="rm-submit" onclick="submitRemix()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Create my bread
+        </button>
+      </div>
+    </div>
+
+    <div id="remix-result">
+      <div class="rr-icon">🍞</div>
+      <h3 id="rr-title"></h3>
+      <div class="rr-bread-card">
+        <h4 id="rr-name"></h4>
+        <p id="rr-story"></p>
+      </div>
+      <p id="rr-cta-text">Your bread has been added to the family tree. Try making it with Thermomix®.</p>
+      <div class="rr-actions">
+        <button class="rr-btn secondary" onclick="closeRemix()">Back to tree</button>
+        <a class="rr-btn primary" href="https://www.vorwerk.com/gb/en/c/home/products/thermomix/thermomix-tm7" target="_blank">Explore TM7</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-text"><strong>Make every bread at home.</strong> Thermomix® TM7 — kneads, proves, guides.</div>
+  <a class="ft-cta" href="https://www.vorwerk.com/gb/en/c/home/products/thermomix/thermomix-tm7" target="_blank">Explore TM7</a>
+</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const familyColors={
+  sourdough:{fill:"#009a3b",stroke:"#006e2c",badge:"#e6f5ed",badgeText:"#006e2c"},
+  yeast:    {fill:"#00777b",stroke:"#005558",badge:"#e4f3f3",badgeText:"#005558"},
+  flatbread:{fill:"#7aaa18",stroke:"#5a8010",badge:"#f0f8e0",badgeText:"#4a6a0d"},
+  chemical: {fill:"#a09658",stroke:"#7a7040",badge:"#f5f2e8",badgeText:"#6a6030"},
+  enriched: {fill:"#113c2b",stroke:"#0a2419",badge:"#e8f0ec",badgeText:"#113c2b"},
+  steamed:  {fill:"#6d6e71",stroke:"#4b4a4b",badge:"#f0f0f0",badgeText:"#4b4a4b"},
+  user:     {fill:"#95c11c",stroke:"#6a8a10",badge:"#f5fadf",badgeText:"#4a6a0d"},
+};
+
+// parent = direct ancestor (evolutionary/technique lineage)
+// coords = approximate [lng,lat] for world map
+const breads=[
+  {id:"wildYeast",   name:"Wild Yeast Culture", family:"sourdough", era:"~10,000 BCE",
+   origin:"Fertile Crescent", parent:null,
+   coords:[40,33],
+   desc:"The earliest leavening agent — wild airborne yeasts captured in wet grain paste. The root of nearly all leavened bread.",
+   img:"https://images.unsplash.com/photo-1585478259715-876acc5be8eb?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"sourdough",   name:"Sourdough",          family:"sourdough", era:"~5,000 BCE",
+   origin:"Global",   parent:"wildYeast",
+   coords:[8,47],
+   desc:"Wild-fermented leavened bread with complex tang. Cultivated starter cultures refined over millennia.",
+   img:"https://images.unsplash.com/photo-1585478259715-876acc5be8eb?w=600&q=80&fit=crop",
+   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r151920"},
+
+  {id:"einkorn",     name:"Einkorn Loaf",       family:"sourdough", era:"~8,000 BCE",
+   origin:"Near East", parent:"wildYeast",
+   coords:[37,37],
+   desc:"Made from ancient wheat domesticated in the Fertile Crescent. Nutty and golden with a tender crumb.",
+   img:"https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"injera",      name:"Injera",             family:"sourdough", era:"~500 BCE",
+   origin:"Ethiopia", parent:"sourdough",
+   coords:[38,9],
+   desc:"Spongy sourdough flatbread made from teff. Serves as plate, utensil, and bread simultaneously.",
+   img:"https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"rye",         name:"Rye Bread",          family:"sourdough", era:"~500 CE",
+   origin:"Northern Europe", parent:"sourdough",
+   coords:[10,54],
+   desc:"Dense, moist loaf from rye flour. Sourdough fermentation is essential for rye's starch structure.",
+   img:"https://images.unsplash.com/photo-1574085733277-851d9d856a3a?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"pumpernickel", name:"Pumpernickel",      family:"sourdough", era:"~1450 CE",
+   origin:"Germany", parent:"rye",
+   coords:[9,51],
+   desc:"Very dark rye loaf steamed for up to 24 hours. Named after a Westphalian term for difficult digestion.",
+   img:"https://images.unsplash.com/photo-1530739833344-c70f7e4b5f24?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"levain",      name:"Pain au Levain",     family:"sourdough", era:"~1700 CE",
+   origin:"France",   parent:"sourdough",
+   coords:[2,47],
+   desc:"French refinement of sourdough technique. Open crumb, chewy crust, and a milder tang.",
+   img:"https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"panettone",   name:"Panettone",          family:"enriched",  era:"~1300 CE",
+   origin:"Italy",    parent:"levain",
+   coords:[9,45],
+   desc:"Tall dome-shaped Christmas bread enriched with candied peel and raisins. Requires a sourdough starter for its distinctive spring.",
+   img:"https://images.unsplash.com/photo-1607920592519-bab15d5b6be9?w=600&q=80&fit=crop",
+   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r488205"},
+
+  {id:"lavash",      name:"Lavash",             family:"flatbread", era:"~1,000 BCE",
+   origin:"Armenia",  parent:"wildYeast",
+   coords:[44,40],
+   desc:"Paper-thin unleavened sheet bread baked on hot stones. One of the world's oldest surviving breads.",
+   img:"https://images.unsplash.com/photo-1620921577892-a5e3af08fcb7?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"pita",        name:"Pita",               family:"flatbread", era:"~2,500 BCE",
+   origin:"Middle East", parent:"lavash",
+   coords:[35,32],
+   desc:"Leavened flatbread that forms a steam pocket at high heat. The basis of Middle Eastern bread culture.",
+   img:"https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80&fit=crop",
+   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r151921"},
+
+  {id:"naan",        name:"Naan",               family:"flatbread", era:"~1300 CE",
+   origin:"South Asia", parent:"pita",
+   coords:[72,22],
+   desc:"Soft, blistered flatbread baked on tandoor walls. Enriched with yoghurt and fat for a distinctive chew.",
+   img:"https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"chapati",     name:"Chapati",            family:"flatbread", era:"~300 BCE",
+   origin:"South Asia", parent:"naan",
+   coords:[77,20],
+   desc:"Unleavened wholegrain flatbread cooked on a dry griddle (tawa). Puffs up dramatically from trapped steam.",
+   img:"https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"tortilla",    name:"Flour Tortilla",     family:"flatbread", era:"~1500 CE",
+   origin:"Mexico",   parent:"chapati",
+   coords:[-102,22],
+   desc:"Soft unleavened wheat round made with fat — a Spanish-influence evolution of indigenous corn tortillas.",
+   img:"https://images.unsplash.com/photo-1574926054530-b0c0fd3ccbe6?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"baguette",    name:"Baguette",           family:"yeast",     era:"~1920 CE",
+   origin:"France",   parent:"levain",
+   coords:[2,48],
+   desc:"Iconic long thin loaf using commercial yeast. Crisp crust, airy crumb. Codified by Parisian law in 1993.",
+   img:"https://images.unsplash.com/photo-1608198093002-ad4e005484ec?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"ciabatta",    name:"Ciabatta",           family:"yeast",     era:"1982 CE",
+   origin:"Italy",    parent:"baguette",
+   coords:[12,44],
+   desc:"High-hydration 'slipper' loaf invented by Arnaldo Cavallari specifically to rival the baguette.",
+   img:"https://images.unsplash.com/photo-1586444248902-2f64eddc8df5?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"focaccia",    name:"Focaccia",           family:"yeast",     era:"~100 BCE",
+   origin:"Italy",    parent:"ciabatta",
+   coords:[8,44],
+   desc:"Thick, dimpled, oily flatbread — possibly Rome's first fast food. Topped with herbs, olives, or tomatoes.",
+   img:"https://images.unsplash.com/photo-1571748982800-fa51082c2224?w=600&q=80&fit=crop",
+   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r152779"},
+
+  {id:"bagel",       name:"Bagel",              family:"yeast",     era:"~1610 CE",
+   origin:"Poland",   parent:"baguette",
+   coords:[21,52],
+   desc:"Boiled then baked ring bread. The boiling gelatinises the surface giving its characteristic shine and chew.",
+   img:"https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"bialy",       name:"Bialy",              family:"yeast",     era:"~1800 CE",
+   origin:"Poland",   parent:"bagel",
+   coords:[23,52],
+   desc:"Chewy roll with an onion-filled depression. Unlike the bagel it is never boiled — baked flat and direct.",
+   img:"https://images.unsplash.com/photo-1559598467-f8b76c8155d0?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"brioche",     name:"Brioche",            family:"enriched",  era:"~1400 CE",
+   origin:"France",   parent:"baguette",
+   coords:[1,47],
+   desc:"Heavily enriched with butter and eggs. Rich, golden, feather-light — the aristocrat of French breads.",
+   img:"https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"challah",     name:"Challah",            family:"enriched",  era:"~1500 CE",
+   origin:"Europe",   parent:"brioche",
+   coords:[15,50],
+   desc:"Egg-enriched braided loaf, slightly sweet. Central to Shabbat and Jewish holiday traditions.",
+   img:"https://images.unsplash.com/photo-1574085733277-851d9d856a3a?w=600&q=80&fit=crop",
+   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r900022"},
+
+  {id:"milk_bread",  name:"Milk Bread",         family:"enriched",  era:"~1900 CE",
+   origin:"Japan",    parent:"brioche",
+   coords:[135,35],
+   desc:"Ultra-soft shokupan loaf using tangzhong (cooked flour paste) — a Japanese innovation giving exceptional softness.",
+   img:"https://images.unsplash.com/photo-1590137876181-2a5a7e340de2?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"soda",        name:"Soda Bread",         family:"chemical",  era:"~1840 CE",
+   origin:"Ireland",  parent:null,
+   coords:[-7,53],
+   desc:"Leavened by bicarbonate of soda reacting with buttermilk — developed when commercial yeast was unavailable.",
+   img:"https://images.unsplash.com/photo-1598373182133-52452f7691ef?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"cornbread",   name:"Cornbread",          family:"chemical",  era:"~1700 CE",
+   origin:"USA",      parent:"soda",
+   coords:[-90,34],
+   desc:"Chemically leavened with baking powder. Evolved from Native American corn preparations by European settlers.",
+   img:"https://images.unsplash.com/photo-1606923829579-0cb981a83e2e?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"scone",       name:"Scone",              family:"chemical",  era:"~1513 CE",
+   origin:"Scotland", parent:"soda",
+   coords:[-3,57],
+   desc:"Butter-rubbed quick bread. First documented in Scotland — the name possibly from the Stone of Destiny (Scone).",
+   img:"https://images.unsplash.com/photo-1567337710282-00832b415979?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"banana_bread",name:"Banana Bread",       family:"chemical",  era:"~1930 CE",
+   origin:"USA",      parent:"scone",
+   coords:[-95,37],
+   desc:"Moist quick loaf born from 1930s Depression-era frugality — overripe bananas too precious to waste.",
+   img:"https://images.unsplash.com/photo-1611323593740-bf6bac578a9e?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"mantou",      name:"Mantou",             family:"steamed",   era:"~200 BCE",
+   origin:"China",    parent:null,
+   coords:[115,32],
+   desc:"Plain steamed wheat bun. Legend links it to Zhuge Liang who reputedly invented it to avoid a sacrificial ritual.",
+   img:"https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"baozi",       name:"Baozi",              family:"steamed",   era:"~300 CE",
+   origin:"China",    parent:"mantou",
+   coords:[117,30],
+   desc:"Filled steamed bun. Evolved from mantou by enclosing meat or sweet fillings — the original stuffed bread.",
+   img:"https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600&q=80&fit=crop",
+   recipe:null},
+
+  {id:"idli",        name:"Idli",               family:"steamed",   era:"~700 CE",
+   origin:"South India", parent:"mantou",
+   coords:[77,13],
+   desc:"Fermented rice and lentil cake steamed in round moulds. Light, spongy, and extraordinarily digestible.",
+   img:"https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=600&q=80&fit=crop",
+   recipe:null},
+];
+
+// Build lookup
+const breadById={};
+breads.forEach(b=>breadById[b.id]=b);
+
+// User-created breads
+const userBreads=[];
+
+// ── SIDEBAR LIST ────────────────────────────────────────────────────────────
+function buildSidebar(list){
+  const el=document.getElementById("bread-list");
+  el.innerHTML="";
+  list.forEach(b=>{
+    const fc=familyColors[b.family]||familyColors.user;
+    const div=document.createElement("div");
+    div.className="bread-item"+(selectedBread===b.id?" selected":"");
+    div.dataset.id=b.id;
+    div.innerHTML=`<div class="bread-dot" style="background:${fc.fill}"></div><div><div class="bread-item-name">${b.name}</div><div class="bread-item-family">${b.family} · ${b.era}</div></div>`;
+    div.onclick=()=>selectBread(b.id);
+    el.appendChild(div);
+  });
+}
+
+function filterBreads(q){
+  const all=[...breads,...userBreads];
+  if(!q.trim()){buildSidebar(all);return;}
+  const lq=q.toLowerCase();
+  buildSidebar(all.filter(b=>b.name.toLowerCase().includes(lq)||b.family.toLowerCase().includes(lq)||b.origin.toLowerCase().includes(lq)));
+}
+
+// ── TREE DRAWING ─────────────────────────────────────────────────────────────
+const treeSvg=d3.select("#tree-svg");
+let selectedBread=null;
+
+function getAncestors(id){
+  const chain=[];
+  let cur=breadById[id];
+  while(cur&&cur.parent){
+    const p=breadById[cur.parent];
+    if(p) chain.unshift(p);
+    cur=p;
+  }
+  return chain;
+}
+
+function getDescendants(id){
+  const all=[...breads,...userBreads];
+  const result=[];
+  function walk(pid){
+    all.filter(b=>b.parent===pid).forEach(b=>{result.push(b);walk(b.id);});
+  }
+  walk(id);
+  return result;
+}
+
+function selectBread(id){
+  selectedBread=id;
+  buildSidebar([...breads,...userBreads]);
+  drawTree(id);
+  fillPanel(id);
+  document.getElementById("tree-empty").classList.add("hidden");
+  document.getElementById("lineage-panel").style.display="block";
+}
+
+function drawTree(id){
+  treeSvg.selectAll("*").remove();
+  const W=document.getElementById("tree-canvas").clientWidth;
+  const H=document.getElementById("tree-canvas").clientHeight;
+  const cx=W*0.42; // offset left to make room for panel
+
+  const selected=breadById[id];
+  if(!selected) return;
+
+  const ancestors=getAncestors(id);
+  const descendants=getDescendants(id);
+
+  // Layout: ancestors above, selected in middle, descendants below
+  const TIER=88; // vertical spacing between tiers
+  const nodes=[];
+
+  // Ancestors - stack upward
+  ancestors.forEach((b,i)=>{
+    nodes.push({...b,_x:cx,_y:H/2-TIER*(ancestors.length-i),_type:"ancestor"});
+  });
+
+  // Selected
+  nodes.push({...selected,_x:cx,_y:H/2,_type:"selected"});
+
+  // Descendants - spread downward in a gentle fan
+  if(descendants.length>0){
+    const maxCols=Math.min(descendants.length,4);
+    const spread=Math.min(descendants.length*70, 280);
+    descendants.forEach((b,i)=>{
+      const col=i%maxCols;
+      const row=Math.floor(i/maxCols);
+      const x=cx+(col-(maxCols-1)/2)*spread/Math.max(maxCols-1,1);
+      const y=H/2+TIER*(row+1);
+      nodes.push({...b,_x:x,_y:y,_type:"descendant"});
+    });
+  }
+
+  const nodeById2={};
+  nodes.forEach(n=>nodeById2[n.id]=n);
+
+  const g=treeSvg.append("g");
+
+  // Draw era markers (horizontal faint lines)
+  const usedY=new Set();
+  nodes.forEach(n=>{
+    if(!usedY.has(n._y)){
+      usedY.add(n._y);
+      g.append("line")
+        .attr("x1",30).attr("y1",n._y)
+        .attr("x2",W*0.82).attr("y2",n._y)
+        .attr("stroke","rgba(0,0,0,0.04)").attr("stroke-width",1).attr("stroke-dasharray","4,6");
+      g.append("text")
+        .attr("class","era-label")
+        .attr("x",28).attr("y",n._y-6)
+        .text(n.era||"");
+    }
+  });
+
+  // Draw links
+  nodes.forEach(n=>{
+    if(n.parent&&nodeById2[n.parent]){
+      const p=nodeById2[n.parent];
+      const isHighlight=n._type==="selected"||p._type==="selected";
+      const isAnc=n._type==="ancestor";
+      // Curved bezier
+      const mx=(n._x+p._x)/2;
+      const my=(n._y+p._y)/2;
+      g.append("path")
+        .attr("class","t-link"+(isHighlight?" highlight":"")+(isAnc?" highlight-anc":""))
+        .attr("d",`M${p._x},${p._y} C${p._x},${my} ${n._x},${my} ${n._x},${n._y}`);
+    }
+  });
+
+  // Draw nodes
+  nodes.forEach(n=>{
+    const fc=familyColors[n.family]||familyColors.user;
+    const r=n._type==="selected"?28:n._type==="ancestor"?18:16;
+    const ng=g.append("g")
+      .attr("class","t-node"+(n.user?" user-node":"")+(n._type==="selected"?" selected":""))
+      .attr("transform",`translate(${n._x},${n._y})`)
+      .style("cursor","pointer")
+      .on("click",()=>selectBread(n.id));
+
+    ng.append("circle")
+      .attr("r",r)
+      .attr("fill",fc.fill)
+      .attr("stroke",n._type==="selected"?"#fff":fc.stroke)
+      .attr("stroke-width",n._type==="selected"?3:1.5)
+      .attr("opacity",n._type==="selected"?1:0.85);
+
+    // Label — shorter for smaller nodes
+    const label=n.name.length>14&&n._type!=="selected"?n.name.split(" ")[0]:n.name;
+    if(n._type==="selected"){
+      // Two-line for selected
+      const words=n.name.split(" ");
+      if(words.length>1){
+        ng.append("text").attr("class","t-label").attr("y",-8).style("font-size","10px").text(words.slice(0,-1).join(" "));
+        ng.append("text").attr("class","t-label").attr("y",7).style("font-size","10px").text(words[words.length-1]);
+      } else {
+        ng.append("text").attr("class","t-label").text(n.name);
+      }
+    } else {
+      ng.append("text").attr("class","t-label").style("font-size","9px").text(label);
+    }
+  });
+}
+
+// ── LINEAGE PANEL ────────────────────────────────────────────────────────────
+function fillPanel(id){
+  const b=breadById[id];
+  if(!b) return;
+  const fc=familyColors[b.family]||familyColors.user;
+
+  // Image
+  const imgEl=document.getElementById("lp-img");
+  const bgEl=document.getElementById("lp-img-bg");
+  if(b.img){
+    const loader=new Image();
+    loader.onload=()=>{imgEl.src=b.img;imgEl.style.display="block"};
+    loader.onerror=()=>{imgEl.style.display="none"};
+    loader.src=b.img;
+  } else {
+    imgEl.style.display="none";
+  }
+
+  // Tag / name / origin / desc
+  const tag=document.getElementById("lp-tag");
+  tag.textContent=b.family; tag.style.background=fc.badge; tag.style.color=fc.badgeText;
+  document.getElementById("lp-name").textContent=b.name;
+  document.getElementById("lp-origin").innerHTML=b.origin+`<span class="era-badge">${b.era}</span>`;
+  document.getElementById("lp-desc").textContent=b.desc;
+
+  // Ancestors
+  const ancs=getAncestors(id);
+  const aWrap=document.getElementById("lp-ancestors-wrap");
+  const aEl=document.getElementById("lp-ancestors");
+  if(ancs.length){
+    aWrap.style.display="block";
+    aEl.innerHTML=ancs.map(a=>`<div class="lp-ancestor" onclick="selectBread('${a.id}')">${a.name} <small style="font-weight:400;color:var(--grey)">${a.era}</small></div>`).join("");
+  } else {
+    aWrap.style.display="none";
+  }
+
+  // Descendants
+  const descs=getDescendants(id);
+  const dWrap=document.getElementById("lp-descendants-wrap");
+  const dEl=document.getElementById("lp-descendants");
+  if(descs.length){
+    dWrap.style.display="block";
+    dEl.innerHTML=descs.map(d=>`<div class="lp-descendant" onclick="selectBread('${d.id}')">${d.name} <small style="font-weight:400;color:var(--grey)">${d.era}</small></div>`).join("");
+  } else {
+    dWrap.style.display="none";
+  }
+
+  // Recipe link
+  const rLink=document.getElementById("lp-recipe-link");
+  if(b.recipe){rLink.style.display="block";rLink.querySelector("a").href=b.recipe;}
+  else{rLink.style.display="none";}
+}
+
+// ── MAP VIEW ─────────────────────────────────────────────────────────────────
+let mapReady=false;
+
+function initMap(){
+  if(mapReady) return;
+  mapReady=true;
+
+  const wrap=document.getElementById("map-svg-wrap");
+  const W=wrap.clientWidth, H=wrap.clientHeight;
+  const svg=d3.select("#map-svg").attr("viewBox",`0 0 ${W} ${H}`);
+
+  const projection=d3.geoNaturalEarth1()
+    .scale(W/6.2)
+    .translate([W/2,H/2]);
+  const path=d3.geoPath().projection(projection);
+
+  // Simple world outline using built-in sphere + graticule
+  svg.append("rect").attr("width",W).attr("height",H).attr("fill","#dfe8e0");
+
+  d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(world=>{
+    const {feature}=window.topojson||{feature:(t,o)=>({type:"FeatureCollection",features:[]})};
+    // Draw countries
+    svg.append("g")
+      .selectAll("path")
+      .data(topojson_feature(world,"countries"))
+      .join("path")
+      .attr("class","country-path")
+      .attr("d",path);
+
+    drawMapNodes(svg,projection,W,H);
+  }).catch(()=>{
+    // Fallback — draw nodes without country shapes
+    drawMapNodes(svg,projection,W,H);
+  });
+}
+
+// Inline topojson feature extraction (lightweight)
+function topojson_feature(topology,name){
+  const obj=topology.objects[name];
+  return {type:"FeatureCollection",features:obj.geometries.map(geom=>{
+    const arcs=geom.arcs||[];
+    return {type:"Feature",geometry:{type:geom.type,coordinates:resolveArcs(topology,geom)},properties:geom.properties||{}};
+  })};
+}
+function resolveArcs(topology,geom){
+  // Minimal arc resolution for display
+  if(!topology.arcs) return [];
+  const scale=topology.transform?topology.transform.scale:[1,1];
+  const translate=topology.transform?topology.transform.translate:[0,0];
+  function decodeArc(i){
+    const reverse=i<0; const idx=reverse?~i:i;
+    const arc=topology.arcs[idx];
+    let x=0,y=0;
+    const pts=arc.map(([dx,dy])=>{x+=dx;y+=dy;return [x*scale[0]+translate[0],y*scale[1]+translate[1]]});
+    return reverse?pts.reverse():pts;
+  }
+  function resolveRing(ring){return ring.flatMap(i=>decodeArc(i));}
+  if(geom.type==="Polygon") return geom.arcs.map(resolveRing);
+  if(geom.type==="MultiPolygon") return geom.arcs.map(rings=>rings.map(resolveRing));
+  return [];
+}
+
+function drawMapNodes(svg,projection,W,H){
+  const tooltip=document.getElementById("map-tooltip");
+  const all=[...breads,...userBreads];
+
+  // Draw migration arcs (parent → child)
+  all.filter(b=>b.parent&&breadById[b.parent]).forEach(b=>{
+    const p=breadById[b.parent];
+    const [x1,y1]=projection(b.parent==="soda"?[-7,53]:p.coords);
+    const [x2,y2]=projection(b.coords);
+    if(!x1||!x2) return;
+    // Bezier arc curving over the middle
+    const mx=(x1+x2)/2, my=Math.min(y1,y2)-60;
+    svg.append("path")
+      .attr("class","map-arc")
+      .attr("d",`M${x1},${y1} Q${mx},${my} ${x2},${y2}`);
+  });
+
+  // Draw bread nodes
+  all.forEach(b=>{
+    const [px,py]=projection(b.coords);
+    if(px<0||px>W||py<0||py>H) return;
+    const fc=familyColors[b.family]||familyColors.user;
+    const ng=svg.append("g").attr("class","map-node").attr("transform",`translate(${px},${py})`);
+    ng.append("circle").attr("r",9).attr("fill",fc.fill).attr("stroke","#fff").attr("stroke-width",1.5).attr("opacity",.9);
+    ng.append("text").attr("class","map-label").style("font-size","8px").text(b.name.split(" ")[0]);
+
+    ng.on("mouseenter",function(e){
+      const tg=familyColors[b.family]||familyColors.user;
+      document.getElementById("mt-tag").textContent=b.family;
+      document.getElementById("mt-tag").style.color=tg.fill;
+      document.getElementById("mt-name").textContent=b.name;
+      document.getElementById("mt-desc").textContent=`${b.origin} · ${b.era}`;
+      tooltip.style.opacity="1";
+      tooltip.style.left=Math.min(px+14,W-200)+"px";
+      tooltip.style.top=Math.max(py-40,8)+"px";
+    }).on("mouseleave",()=>{tooltip.style.opacity="0";})
+      .on("click",()=>{switchView("tree");selectBread(b.id);});
+  });
+}
+
+// ── VIEW SWITCHING ────────────────────────────────────────────────────────────
+function switchView(v){
+  document.querySelectorAll(".nav-tab").forEach((t,i)=>{
+    t.classList.toggle("active",(i===0&&v==="tree")||(i===1&&v==="map"));
+  });
+  document.getElementById("view-tree").classList.toggle("active",v==="tree");
+  document.getElementById("view-map").classList.toggle("active",v==="map");
+  if(v==="map") initMap();
+}
+
+// ── REMIX MODAL ───────────────────────────────────────────────────────────────
+function openRemix(){
+  if(!selectedBread) return;
+  const b=breadById[selectedBread];
+  document.getElementById("remix-parent-name").textContent=b.name;
+  document.getElementById("remix-name").value="";
+  document.getElementById("remix-region").value="";
+  document.getElementById("remix-twist").value="";
+  document.getElementById("remix-desc").value="";
+  document.getElementById("remix-body").style.display="block";
+  document.getElementById("remix-result").style.display="none";
+  document.getElementById("remix-overlay").classList.add("open");
+}
+
+function closeRemix(){
+  document.getElementById("remix-overlay").classList.remove("open");
+}
+
+const stories=[
+  "Born from centuries of tradition and a single moment of inspiration",
+  "A bread that bridges two worlds — rooted in the old, reaching into the new",
+  "What happens when a familiar loaf meets an unexpected hand and a different oven",
+  "Slow fermentation, careful hands, and one key twist that changes everything",
+  "A flavour memory transformed into something entirely its own",
+  "The kind of bread that makes you wonder why nobody thought of it sooner",
+];
+
+function submitRemix(){
+  const name=document.getElementById("remix-name").value.trim();
+  if(!name){document.getElementById("remix-name").focus();return;}
+  const parent=selectedBread;
+  const region=document.getElementById("remix-region").value||"Anywhere";
+  const twist=document.getElementById("remix-twist").value;
+  const userDesc=document.getElementById("remix-desc").value.trim();
+  const pb=breadById[parent];
+
+  // Build new bread entry
+  const newId="user_"+Date.now();
+  const newBread={
+    id:newId, name, family:pb.family, era:"2025 CE",
+    origin:region, parent,
+    coords:[pb.coords[0]+Math.random()*20-10, pb.coords[1]+Math.random()*10-5],
+    desc:userDesc||`A creative evolution of ${pb.name}${twist?", shaped by: "+twist.toLowerCase():""}. Made possible with Thermomix®.`,
+    img:pb.img, recipe:null, user:true,
+  };
+  userBreads.push(newBread);
+  breadById[newId]=newBread;
+
+  // Show result
+  document.getElementById("remix-body").style.display="none";
+  const res=document.getElementById("remix-result");
+  res.style.display="block";
+  document.getElementById("rr-title").textContent=`${name} — added to the family tree!`;
+  document.getElementById("rr-name").textContent=name;
+  document.getElementById("rr-story").textContent=newBread.desc+" "+stories[Math.floor(Math.random()*stories.length)]+".";
+
+  // Rebuild sidebar + re-select to show new node
+  buildSidebar([...breads,...userBreads]);
+  setTimeout(()=>{
+    closeRemix();
+    selectBread(newId);
+  },3200);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+buildSidebar(breads);
+
+// Responsive tree redraw
+window.addEventListener("resize",()=>{if(selectedBread)drawTree(selectedBread);});
+</script>
+
+<!-- Topojson -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+</body>
+</html>
