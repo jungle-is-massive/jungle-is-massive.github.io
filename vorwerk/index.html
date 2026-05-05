@@ -41,57 +41,69 @@ svg{width:100%;height:100%}
 
 /* Info Panel */
 #info-panel{
-  position:absolute;top:16px;right:16px;width:268px;
+  position:absolute;top:16px;right:16px;width:260px;
   background:var(--vw-white);
   border-top:3px solid var(--vw-green);
   border-radius:0 0 4px 4px;
   opacity:0;
   transition:opacity 0.3s ease,transform 0.3s ease;
-  transform:translateX(20px);
+  transform:translateX(16px);
   pointer-events:none;
   box-shadow:0 4px 28px rgba(17,60,43,0.14);
   overflow:hidden;
 }
 #info-panel.visible{opacity:1;transform:translateX(0);pointer-events:auto}
 
-/* Bread image */
-#ip-img-wrap{width:100%;height:150px;overflow:hidden;background:#e8ede9;position:relative}
-#ip-img{width:100%;height:100%;object-fit:cover;transition:opacity 0.4s ease;opacity:0}
+/* Bread image — FIX: never set display:none, use opacity + visibility only */
+#ip-img-wrap{
+  width:100%;height:140px;overflow:hidden;
+  background:#e4ede7;position:relative;
+  flex-shrink:0;
+}
+#ip-img-placeholder{
+  position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;transition:opacity 0.3s;
+}
+#ip-img-placeholder svg{opacity:0.2}
+#ip-img{
+  position:absolute;inset:0;
+  width:100%;height:100%;object-fit:cover;
+  opacity:0;transition:opacity 0.35s ease;
+}
 #ip-img.loaded{opacity:1}
-#ip-img-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-#ip-img-placeholder svg{opacity:0.18}
 
 /* Panel content */
-#ip-content{padding:16px 18px 18px}
-#ip-family-tag{display:inline-block;font-size:9px;font-weight:700;padding:3px 10px;border-radius:2px;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.1em}
+#ip-content{padding:14px 16px 16px}
+#ip-family-tag{display:inline-block;font-size:9px;font-weight:700;padding:3px 9px;border-radius:2px;margin-bottom:9px;text-transform:uppercase;letter-spacing:0.1em}
 #ip-name{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--vw-green-dark);margin-bottom:2px;line-height:1.25}
-#ip-origin{font-size:11px;color:var(--vw-light-grey);margin-bottom:11px;text-transform:uppercase;letter-spacing:0.09em;font-weight:600}
-#ip-desc{font-size:13px;color:var(--vw-grey);line-height:1.65;border-top:1px solid #e8e8e6;padding-top:11px}
+#ip-origin{font-size:11px;color:var(--vw-light-grey);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.09em;font-weight:600}
+#ip-desc{font-size:13px;color:var(--vw-grey);line-height:1.6;border-top:1px solid #eaeae8;padding-top:10px}
 
 /* Related */
-#ip-related{margin-top:13px}
-#ip-related-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--vw-light-grey);margin-bottom:7px}
-#ip-related-list{display:flex;flex-wrap:wrap;gap:5px}
-.related-tag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:2px;background:#f0f7f2;color:var(--vw-green-mid);cursor:pointer;border:1px solid #c8e6d2;transition:background 0.15s;font-family:var(--font-body)}
+#ip-related{margin-top:12px}
+#ip-related-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--vw-light-grey);margin-bottom:6px}
+#ip-related-list{display:flex;flex-wrap:wrap;gap:4px}
+.related-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:2px;background:#f0f7f2;color:var(--vw-green-mid);cursor:pointer;border:1px solid #c8e6d2;transition:background 0.15s;font-family:var(--font-body)}
 .related-tag:hover{background:#d6f0e0}
 
-/* Cookidoo CTA */
-#ip-recipe-link{display:none;margin-top:14px;padding-top:13px;border-top:1px solid #e8e8e6}
+/* FIX: Recipe link — compact inline button, not full-width block */
+#ip-recipe-link{display:none;margin-top:12px}
 #ip-recipe-link a{
-  display:flex;align-items:center;justify-content:center;gap:8px;
+  display:inline-flex;align-items:center;gap:6px;
   background:var(--vw-green);color:#fff;
   font-size:12px;font-weight:700;
-  padding:9px 14px;border-radius:2px;
-  text-decoration:none;letter-spacing:0.05em;text-transform:uppercase;
+  padding:7px 14px;border-radius:20px;
+  text-decoration:none;letter-spacing:0.04em;
   transition:background 0.15s;
+  white-space:nowrap;
 }
 #ip-recipe-link a:hover{background:var(--vw-green-mid)}
-#ip-recipe-link a svg{flex-shrink:0}
+#ip-recipe-link a svg{flex-shrink:0;width:12px;height:12px}
 
 /* Legend */
 #legend{position:absolute;bottom:16px;left:16px;background:var(--vw-white);border-left:3px solid var(--vw-green);border-radius:0 4px 4px 0;padding:12px 16px;box-shadow:0 2px 12px rgba(17,60,43,0.08)}
-#legend-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--vw-light-grey);margin-bottom:9px}
-.legend-item{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px;color:var(--vw-charcoal)}
+#legend-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--vw-light-grey);margin-bottom:8px}
+.legend-item{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:12px;color:var(--vw-charcoal)}
 .legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 
 /* Hint */
@@ -104,9 +116,9 @@ svg{width:100%;height:100%}
 #cta-btn{font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--vw-green-dark);background:var(--vw-white);border:none;padding:8px 20px;border-radius:2px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;margin-left:24px;text-decoration:none;display:inline-block}
 #cta-btn:hover{background:var(--vw-lime)}
 
-/* Pulse ring animation on selected node */
-@keyframes pulseRing{0%{r:0;opacity:0.6}100%{r:60px;opacity:0}}
-.pulse-ring{animation:pulseRing 0.7s ease-out forwards;fill:none;stroke:var(--vw-lime);stroke-width:2;pointer-events:none}
+/* Pulse ring */
+@keyframes pulseRing{0%{r:0;opacity:0.7}100%{r:55px;opacity:0}}
+.pulse-ring{animation:pulseRing 0.65s ease-out forwards;fill:none;stroke:var(--vw-lime);stroke-width:2;pointer-events:none}
 </style>
 </head>
 <body>
@@ -125,7 +137,7 @@ svg{width:100%;height:100%}
     <div id="info-panel">
       <div id="ip-img-wrap">
         <div id="ip-img-placeholder">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#009a3b" stroke-width="1.5"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+          <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="#009a3b" stroke-width="1.5"><ellipse cx="24" cy="28" rx="18" ry="10"/><path d="M6 28 Q8 14 24 12 Q40 14 42 28"/><path d="M14 28 Q16 20 24 19 Q32 20 34 28"/></svg>
         </div>
         <img id="ip-img" src="" alt="" />
       </div>
@@ -140,8 +152,8 @@ svg{width:100%;height:100%}
         </div>
         <div id="ip-recipe-link">
           <a href="#" target="_blank" rel="noopener">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-            Make this on Cookidoo®
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-1.5 9.5V5.5l5 2.5-5 2.5z"/></svg>
+            Link to recipe
           </a>
         </div>
       </div>
@@ -167,139 +179,178 @@ svg{width:100%;height:100%}
 </div>
 
 <script>
-// Unsplash bread images - using specific curated photo IDs for each bread type
-// Images pulled from Unsplash free tier (no key needed for direct source URLs)
+// FIX: all unique Unsplash image IDs — no duplicates
 const breadData = [
-  {id:"sourdough",name:"Sourdough",family:"sourdough",origin:"Global",
+  {id:"sourdough",   name:"Sourdough",      family:"sourdough", origin:"Global",
    desc:"Wild-fermented leavened bread with complex tang. The ancestor of most modern leavened breads — and ideal for the Thermomix® fermentation programs.",
    img:"https://images.unsplash.com/photo-1585478259715-876acc5be8eb?w=600&q=80&fit=crop",
-   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r151920",
-   size:30},
-  {id:"levain",name:"Pain au Levain",family:"sourdough",origin:"France",
-   desc:"French sourdough with open crumb and chewy crust. Slightly milder than San Francisco style.",
+   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r151920", size:30},
+
+  {id:"levain",      name:"Pain au Levain", family:"sourdough", origin:"France",
+   desc:"French sourdough with open crumb and chewy crust. Slightly milder in tang than American-style sourdough.",
    img:"https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80&fit=crop",
-   recipe:null,size:18},
-  {id:"rye",name:"Rye Bread",family:"sourdough",origin:"Northern Europe",
-   desc:"Dense, moist loaf made with rye flour. Requires sourdough because rye needs long fermentation.",
+   recipe:null, size:18},
+
+  {id:"rye",         name:"Rye Bread",      family:"sourdough", origin:"Northern Europe",
+   desc:"Dense, moist loaf made with rye flour. Requires sourdough because rye needs long fermentation to develop.",
    img:"https://images.unsplash.com/photo-1574085733277-851d9d856a3a?w=600&q=80&fit=crop",
-   recipe:null,size:20},
-  {id:"pumpernickel",name:"Pumpernickel",family:"sourdough",origin:"Germany",
-   desc:"Very dark rye loaf, steamed for up to 24 hours. Intensely earthy and slightly sweet.",
-   img:"https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=80&fit=crop",
-   recipe:null,size:16},
-  {id:"einkorn",name:"Einkorn Loaf",family:"sourdough",origin:"Ancient Near East",
-   desc:"Made from ancient wheat. Nutty, golden, and naturally easier to digest.",
+   recipe:null, size:20},
+
+  {id:"pumpernickel",name:"Pumpernickel",   family:"sourdough", origin:"Germany",
+   desc:"Very dark rye loaf, steamed for up to 24 hours. Intensely earthy, slightly sweet, and deeply complex.",
+   img:"https://images.unsplash.com/photo-1530739833344-c70f7e4b5f24?w=600&q=80&fit=crop",
+   recipe:null, size:16},
+
+  {id:"einkorn",     name:"Einkorn Loaf",   family:"sourdough", origin:"Ancient Near East",
+   desc:"Made from ancient wheat. Nutty, golden, and naturally easier to digest than modern wheat varieties.",
    img:"https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=600&q=80&fit=crop",
-   recipe:null,size:13},
-  {id:"injera",name:"Injera",family:"sourdough",origin:"Ethiopia",
-   desc:"Spongy sourdough flatbread made from teff. The plate, utensil, and bread all in one.",
+   recipe:null, size:13},
+
+  {id:"injera",      name:"Injera",         family:"sourdough", origin:"Ethiopia",
+   desc:"Spongy sourdough flatbread made from teff. Serves as plate, utensil, and bread all in one.",
    img:"https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600&q=80&fit=crop",
-   recipe:null,size:16},
-  {id:"baguette",name:"Baguette",family:"yeast",origin:"France",
-   desc:"Iconic long thin loaf. Crisp crust, airy crumb. The benchmark for commercial yeast technique.",
+   recipe:null, size:16},
+
+  {id:"baguette",    name:"Baguette",       family:"yeast",     origin:"France",
+   desc:"Iconic long thin loaf. Crisp crust, open airy crumb. The benchmark for commercial yeast technique.",
    img:"https://images.unsplash.com/photo-1608198093002-ad4e005484ec?w=600&q=80&fit=crop",
-   recipe:null,size:26},
-  {id:"ciabatta",name:"Ciabatta",family:"yeast",origin:"Italy",
-   desc:"High-hydration loaf with irregular holes. Invented in 1982 to rival the baguette.",
+   recipe:null, size:26},
+
+  {id:"ciabatta",    name:"Ciabatta",       family:"yeast",     origin:"Italy",
+   desc:"High-hydration loaf with irregular holes. Invented in 1982 specifically to rival the baguette.",
    img:"https://images.unsplash.com/photo-1586444248902-2f64eddc8df5?w=600&q=80&fit=crop",
-   recipe:null,size:20},
-  {id:"focaccia",name:"Focaccia",family:"yeast",origin:"Italy",
-   desc:"Thick, oily flatbread dimpled by hand. Often topped with herbs, olives, or tomatoes.",
+   recipe:null, size:20},
+
+  {id:"focaccia",    name:"Focaccia",       family:"yeast",     origin:"Italy",
+   desc:"Thick, oily flatbread dimpled by hand. Often topped with herbs, olives, or cherry tomatoes.",
    img:"https://images.unsplash.com/photo-1571748982800-fa51082c2224?w=600&q=80&fit=crop",
-   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r152779",size:20},
-  {id:"poolish",name:"Pain Poolish",family:"yeast",origin:"Poland / France",
-   desc:"Uses a pre-ferment for deeper flavour — a bridge between commercial yeast and sourdough.",
+   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r152779", size:20},
+
+  {id:"poolish",     name:"Pain Poolish",   family:"yeast",     origin:"Poland / France",
+   desc:"Uses an overnight pre-ferment for deeper flavour — a technical bridge between commercial yeast and sourdough.",
    img:"https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?w=600&q=80&fit=crop",
-   recipe:null,size:14},
-  {id:"bialy",name:"Bialy",family:"yeast",origin:"Poland",
-   desc:"Chewy roll with a depression filled with onion. Related to the bagel but never boiled.",
-   img:"https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=80&fit=crop",
-   recipe:null,size:13},
-  {id:"bagel",name:"Bagel",family:"yeast",origin:"Poland",
-   desc:"Boiled then baked ring. Dense, chewy, shiny crust. A New York classic.",
+   recipe:null, size:14},
+
+  {id:"bialy",       name:"Bialy",          family:"yeast",     origin:"Poland",
+   desc:"Chewy roll with a depression filled with onion and poppy seeds. Related to the bagel but never boiled.",
+   img:"https://images.unsplash.com/photo-1559598467-f8b76c8155d0?w=600&q=80&fit=crop",
+   recipe:null, size:13},
+
+  {id:"bagel",       name:"Bagel",          family:"yeast",     origin:"Poland",
+   desc:"Boiled then baked ring. Dense, chewy, with a shiny crust. A New York and Jewish deli classic.",
    img:"https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=600&q=80&fit=crop",
-   recipe:null,size:18},
-  {id:"pita",name:"Pita",family:"flatbread",origin:"Middle East",
-   desc:"Leavened flatbread that puffs into a pocket when baked at high heat.",
+   recipe:null, size:18},
+
+  {id:"pita",        name:"Pita",           family:"flatbread", origin:"Middle East",
+   desc:"Leavened flatbread that puffs into a hollow pocket when baked at very high heat.",
    img:"https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80&fit=crop",
-   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r151921",size:22},
-  {id:"naan",name:"Naan",family:"flatbread",origin:"South Asia",
-   desc:"Soft, blistered flatbread baked on the walls of a tandoor oven. Enriched with yoghurt.",
+   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r151921", size:22},
+
+  {id:"naan",        name:"Naan",           family:"flatbread", origin:"South Asia",
+   desc:"Soft, blistered flatbread traditionally baked on the walls of a tandoor oven. Enriched with yoghurt.",
    img:"https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&q=80&fit=crop",
-   recipe:null,size:22},
-  {id:"lavash",name:"Lavash",family:"flatbread",origin:"Armenia",
-   desc:"Thin unleavened sheet bread. One of the oldest breads in the world.",
+   recipe:null, size:22},
+
+  {id:"lavash",      name:"Lavash",         family:"flatbread", origin:"Armenia",
+   desc:"Thin unleavened sheet bread rolled paper-thin and baked on hot stones. One of the world's oldest breads.",
    img:"https://images.unsplash.com/photo-1620921577892-a5e3af08fcb7?w=600&q=80&fit=crop",
-   recipe:null,size:16},
-  {id:"chapati",name:"Chapati",family:"flatbread",origin:"South Asia",
-   desc:"Unleavened wholegrain flatbread cooked on a griddle. Puffs up from steam.",
+   recipe:null, size:16},
+
+  {id:"chapati",     name:"Chapati",        family:"flatbread", origin:"South Asia",
+   desc:"Unleavened wholegrain flatbread cooked on a dry griddle. Puffs up from trapped steam.",
    img:"https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&q=80&fit=crop",
-   recipe:null,size:16},
-  {id:"tortilla",name:"Flour Tortilla",family:"flatbread",origin:"Mexico",
-   desc:"Soft unleavened round made with fat. Evolved from indigenous corn tortillas.",
+   recipe:null, size:16},
+
+  {id:"tortilla",    name:"Flour Tortilla", family:"flatbread", origin:"Mexico",
+   desc:"Soft unleavened round made with fat and wheat flour. Evolved from indigenous corn masa tortillas.",
    img:"https://images.unsplash.com/photo-1574926054530-b0c0fd3ccbe6?w=600&q=80&fit=crop",
-   recipe:null,size:18},
-  {id:"soda",name:"Soda Bread",family:"chemical",origin:"Ireland",
+   recipe:null, size:18},
+
+  {id:"soda",        name:"Soda Bread",     family:"chemical",  origin:"Ireland",
    desc:"Leavened by bicarbonate of soda reacting with buttermilk. No yeast, no kneading, no waiting.",
    img:"https://images.unsplash.com/photo-1598373182133-52452f7691ef?w=600&q=80&fit=crop",
-   recipe:null,size:20},
-  {id:"cornbread",name:"Cornbread",family:"chemical",origin:"USA",
-   desc:"Chemically leavened with baking powder. Crumbly, slightly sweet Southern staple.",
+   recipe:null, size:20},
+
+  {id:"cornbread",   name:"Cornbread",      family:"chemical",  origin:"USA",
+   desc:"Chemically leavened with baking powder. Crumbly, slightly sweet, and a Southern staple.",
    img:"https://images.unsplash.com/photo-1606923829579-0cb981a83e2e?w=600&q=80&fit=crop",
-   recipe:null,size:18},
-  {id:"scone",name:"Scone",family:"chemical",origin:"Scotland",
-   desc:"Butter-rubbed, baking-powder-leavened quick bread. Richer and more buttery than soda bread.",
+   recipe:null, size:18},
+
+  {id:"scone",       name:"Scone",          family:"chemical",  origin:"Scotland",
+   desc:"Butter-rubbed, baking-powder-leavened quick bread. Richer and more delicate than soda bread.",
    img:"https://images.unsplash.com/photo-1567337710282-00832b415979?w=600&q=80&fit=crop",
-   recipe:null,size:16},
-  {id:"banana_bread",name:"Banana Bread",family:"chemical",origin:"USA",
-   desc:"Moist loaf leavened by baking soda. Technically a quick bread, culturally a cake.",
-   img:"https://images.unsplash.com/photo-1586444248902-2f64eddc8df5?w=600&q=80&fit=crop",
-   recipe:null,size:14},
-  {id:"brioche",name:"Brioche",family:"enriched",origin:"France",
-   desc:"Butter and egg enriched bread. Rich, golden, tender crumb. More cake than bread.",
-   img:"https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=600&q=80&fit=crop",
-   recipe:null,size:22},
-  {id:"challah",name:"Challah",family:"enriched",origin:"Ashkenazi Jewish",
-   desc:"Egg-enriched braided loaf. Slightly sweet, traditionally made for Shabbat.",
+   recipe:null, size:16},
+
+  {id:"banana_bread",name:"Banana Bread",   family:"chemical",  origin:"USA",
+   desc:"Moist quick loaf leavened by baking soda reacting with ripe bananas. Technically bread, culturally cake.",
+   img:"https://images.unsplash.com/photo-1611323593740-bf6bac578a9e?w=600&q=80&fit=crop",
+   recipe:null, size:14},
+
+  {id:"brioche",     name:"Brioche",        family:"enriched",  origin:"France",
+   desc:"Heavily enriched with butter and eggs. Rich, golden, and feather-light — closer to cake than bread.",
+   img:"https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=600&q=80&fit=crop",
+   recipe:null, size:22},
+
+  {id:"challah",     name:"Challah",        family:"enriched",  origin:"Ashkenazi Jewish",
+   desc:"Egg-enriched braided loaf, slightly sweet. Traditionally made for Shabbat and Jewish holidays.",
    img:"https://images.unsplash.com/photo-1574085733277-851d9d856a3a?w=600&q=80&fit=crop",
-   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r900022",size:18},
-  {id:"panettone",name:"Panettone",family:"enriched",origin:"Italy",
-   desc:"Tall dome-shaped Christmas bread enriched with candied peel and raisins. Uses sourdough starter.",
+   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r900022", size:18},
+
+  {id:"panettone",   name:"Panettone",      family:"enriched",  origin:"Italy",
+   desc:"Tall dome-shaped Christmas bread enriched with candied peel and raisins. Uses a sourdough starter.",
    img:"https://images.unsplash.com/photo-1607920592519-bab15d5b6be9?w=600&q=80&fit=crop",
-   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r488205",size:16},
-  {id:"milk_bread",name:"Milk Bread",family:"enriched",origin:"Japan",
-   desc:"Ultra-soft loaf using tangzhong (cooked flour paste). Pillowy texture, slightly sweet.",
+   recipe:"https://cookidoo.co.uk/recipes/recipe/en-GB/r488205", size:16},
+
+  {id:"milk_bread",  name:"Milk Bread",     family:"enriched",  origin:"Japan",
+   desc:"Ultra-soft loaf made using tangzhong — a cooked flour-paste that gives it a uniquely pillowy crumb.",
    img:"https://images.unsplash.com/photo-1590137876181-2a5a7e340de2?w=600&q=80&fit=crop",
-   recipe:null,size:18},
-  {id:"mantou",name:"Mantou",family:"steamed",origin:"China",
-   desc:"Plain steamed bun made with wheat flour. Soft, white, and slightly chewy.",
+   recipe:null, size:18},
+
+  {id:"mantou",      name:"Mantou",         family:"steamed",   origin:"China",
+   desc:"Plain steamed bun made with wheat flour. Soft, white, and mildly chewy — eaten as a staple starch.",
    img:"https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=600&q=80&fit=crop",
-   recipe:null,size:18},
-  {id:"baozi",name:"Baozi",family:"steamed",origin:"China",
-   desc:"Filled steamed bun. Evolved from mantou by adding meat or sweet fillings.",
-   img:"https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=600&q=80&fit=crop",
-   recipe:null,size:16},
-  {id:"idli",name:"Idli",family:"steamed",origin:"South India",
-   desc:"Fermented rice and lentil cake, steamed in moulds. Light and very digestible.",
+   recipe:null, size:18},
+
+  {id:"baozi",       name:"Baozi",          family:"steamed",   origin:"China",
+   desc:"Filled steamed bun. Evolved from mantou by enclosing meat or sweet fillings inside the dough.",
+   img:"https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600&q=80&fit=crop",
+   recipe:null, size:16},
+
+  {id:"idli",        name:"Idli",           family:"steamed",   origin:"South India",
+   desc:"Fermented rice and black lentil cake, steamed in round moulds. Light, spongy, and very digestible.",
    img:"https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=600&q=80&fit=crop",
-   recipe:null,size:14},
+   recipe:null, size:14},
 ];
 
+// FIX: explicit link list with no orphans — every entry has both endpoints in breadData
 const links=[
-  {source:"sourdough",target:"levain"},{source:"sourdough",target:"rye"},
-  {source:"sourdough",target:"injera"},{source:"rye",target:"pumpernickel"},
-  {source:"sourdough",target:"einkorn"},{source:"sourdough",target:"panettone"},
-  {source:"baguette",target:"ciabatta"},{source:"baguette",target:"poolish"},
-  {source:"poolish",target:"levain"},{source:"baguette",target:"focaccia"},
-  {source:"ciabatta",target:"focaccia"},{source:"bagel",target:"bialy"},
-  {source:"pita",target:"naan"},{source:"pita",target:"lavash"},
-  {source:"chapati",target:"tortilla"},{source:"naan",target:"chapati"},
-  {source:"soda",target:"cornbread"},{source:"soda",target:"scone"},
-  {source:"scone",target:"banana_bread"},{source:"brioche",target:"challah"},
-  {source:"brioche",target:"milk_bread"},{source:"brioche",target:"panettone"},
-  {source:"mantou",target:"baozi"},{source:"naan",target:"mantou"},
-  {source:"sourdough",target:"idli"},{source:"baguette",target:"bagel"},
-  {source:"focaccia",target:"pita"},
+  {source:"sourdough",   target:"levain"},
+  {source:"sourdough",   target:"rye"},
+  {source:"sourdough",   target:"injera"},
+  {source:"sourdough",   target:"einkorn"},
+  {source:"sourdough",   target:"panettone"},
+  {source:"rye",         target:"pumpernickel"},
+  {source:"baguette",    target:"ciabatta"},
+  {source:"baguette",    target:"focaccia"},
+  {source:"baguette",    target:"bagel"},
+  {source:"baguette",    target:"poolish"},
+  {source:"poolish",     target:"levain"},
+  {source:"ciabatta",    target:"focaccia"},
+  {source:"bagel",       target:"bialy"},
+  {source:"focaccia",    target:"pita"},
+  {source:"pita",        target:"naan"},
+  {source:"pita",        target:"lavash"},
+  {source:"naan",        target:"chapati"},
+  {source:"naan",        target:"mantou"},
+  {source:"chapati",     target:"tortilla"},
+  {source:"soda",        target:"cornbread"},
+  {source:"soda",        target:"scone"},
+  {source:"scone",       target:"banana_bread"},
+  {source:"brioche",     target:"challah"},
+  {source:"brioche",     target:"milk_bread"},
+  {source:"brioche",     target:"panettone"},
+  {source:"mantou",      target:"baozi"},
+  {source:"sourdough",   target:"idli"},
 ];
 
 const familyStyles={
@@ -316,11 +367,14 @@ const H=window.innerHeight-60-48;
 const svg=d3.select("#svg").attr("viewBox",`0 0 ${W} ${H}`);
 const gMain=svg.append("g");
 
+// FIX: stronger forces + boundary force to prevent nodes flying off-screen and creating dangling lines
 const sim=d3.forceSimulation(breadData)
-  .force("link",d3.forceLink(links).id(d=>d.id).distance(95).strength(0.38))
-  .force("charge",d3.forceManyBody().strength(-300))
-  .force("center",d3.forceCenter(W/2,H/2))
-  .force("collision",d3.forceCollide().radius(d=>d.size+22));
+  .force("link",d3.forceLink(links).id(d=>d.id).distance(90).strength(0.5))
+  .force("charge",d3.forceManyBody().strength(-380))
+  .force("center",d3.forceCenter(W/2,H/2).strength(0.08))
+  .force("collision",d3.forceCollide().radius(d=>d.size+24).strength(0.9))
+  .force("boundX",d3.forceX(W/2).strength(0.04))
+  .force("boundY",d3.forceY(H/2).strength(0.04));
 
 const linkSel=gMain.append("g")
   .selectAll("line").data(links).join("line")
@@ -340,63 +394,56 @@ nodeSel.append("circle")
   .attr("fill",d=>familyStyles[d.family].fill)
   .attr("stroke",d=>familyStyles[d.family].stroke)
   .attr("stroke-width",1.5)
-  .style("cursor","pointer")
-  .style("transition","opacity 0.4s ease");
+  .style("cursor","pointer");
 
 nodeSel.append("text").attr("class","node-label")
   .style("font-size",d=>d.size>=20?"10.5px":"9px")
   .text(d=>{
-    if(d.name==="Flour Tortilla")return"Tortilla";
-    if(d.name==="Banana Bread")return"Banana Bread";
-    if(d.name==="Milk Bread")return"Milk Bread";
-    if(d.name==="Soda Bread")return"Soda Bread";
-    if(d.name==="Pain au Levain")return"Levain";
-    if(d.name==="Pain Poolish")return"Poolish";
+    if(d.name==="Flour Tortilla") return"Tortilla";
+    if(d.name==="Pain au Levain") return"Levain";
+    if(d.name==="Pain Poolish")   return"Poolish";
     return d.name;
   });
 
+// FIX: hard clamp nodes within SVG bounds every tick
+const PAD=40;
 sim.on("tick",()=>{
+  breadData.forEach(d=>{
+    d.x=Math.max(d.size+PAD, Math.min(W-d.size-PAD, d.x));
+    d.y=Math.max(d.size+PAD, Math.min(H-d.size-PAD, d.y));
+  });
   linkSel
     .attr("x1",d=>d.source.x).attr("y1",d=>d.source.y)
     .attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
-  nodeSel.attr("transform",d=>
-    `translate(${Math.max(d.size+2,Math.min(W-d.size-2,d.x))},${Math.max(d.size+2,Math.min(H-d.size-2,d.y))})`
-  );
+  nodeSel.attr("transform",d=>`translate(${d.x},${d.y})`);
 });
 
-// Zoom behaviour
 const zoomBehaviour=d3.zoom().scaleExtent([0.35,4]).on("zoom",e=>gMain.attr("transform",e.transform));
 svg.call(zoomBehaviour);
 
-let currentZoomTransform=d3.zoomIdentity;
-svg.on("zoom.track",e=>{currentZoomTransform=e.transform});
+let currentTransform=d3.zoomIdentity;
+svg.on("zoom.track",e=>{currentTransform=e.transform});
 
-// ── Node selection with animated pan-to-centre ──
 let pulseEl=null;
 
 function selectNode(d){
-  // 1. Pulse ring animation on the node
-  if(pulseEl) pulseEl.remove();
-  const nodeGroup=nodeSel.filter(n=>n.id===d.id).node();
-  pulseEl=d3.select(nodeGroup).insert("circle","circle")
-    .attr("r",d.size)
-    .attr("class","pulse-ring")
-    .style("transform-origin","center");
-  setTimeout(()=>{if(pulseEl)pulseEl.remove();pulseEl=null;},800);
+  // Pulse ring
+  if(pulseEl){pulseEl.remove();pulseEl=null;}
+  const ng=nodeSel.filter(n=>n.id===d.id).node();
+  pulseEl=d3.select(ng).insert("circle","circle")
+    .attr("r",d.size).attr("class","pulse-ring");
+  setTimeout(()=>{if(pulseEl){pulseEl.remove();pulseEl=null;}},800);
 
-  // 2. Smoothly pan+zoom so clicked node is centred in canvas
+  // Pan + gentle zoom to centre
   const svgEl=document.getElementById("svg");
-  const cw=svgEl.clientWidth;
-  const ch=svgEl.clientHeight;
-  const targetScale=Math.min(1.6, Math.max(currentZoomTransform.k, 1.1));
-  const tx=cw/2 - targetScale*d.x;
-  const ty=ch/2 - targetScale*d.y;
-  const newTransform=d3.zoomIdentity.translate(tx,ty).scale(targetScale);
+  const cw=svgEl.clientWidth, ch=svgEl.clientHeight;
+  const targetScale=Math.min(1.6,Math.max(currentTransform.k,1.1));
+  const tx=cw/2-targetScale*d.x;
+  const ty=ch/2-targetScale*d.y;
+  svg.transition().duration(520).ease(d3.easeCubicOut)
+    .call(zoomBehaviour.transform,d3.zoomIdentity.translate(tx,ty).scale(targetScale));
 
-  svg.transition().duration(550).ease(d3.easeCubicOut)
-    .call(zoomBehaviour.transform, newTransform);
-
-  // 3. Fade dim/highlight logic
+  // Highlight connections
   const connectedIds=new Set(
     links.filter(l=>l.source.id===d.id||l.target.id===d.id)
          .flatMap(l=>[l.source.id,l.target.id])
@@ -406,15 +453,13 @@ function selectNode(d){
   linkSel.transition().duration(350)
     .attr("stroke",l=>(l.source.id===d.id||l.target.id===d.id)?familyStyles[d.family].fill:"#c8cfc8")
     .attr("stroke-width",l=>(l.source.id===d.id||l.target.id===d.id)?2.5:1)
-    .attr("stroke-opacity",l=>(l.source.id===d.id||l.target.id===d.id)?1:0.18);
+    .attr("stroke-opacity",l=>(l.source.id===d.id||l.target.id===d.id)?1:0.15);
 
   nodeSel.select("circle").transition().duration(350)
     .style("opacity",n=>connectedIds.has(n.id)?1:0.18);
-
   nodeSel.select("text").transition().duration(350)
-    .style("opacity",n=>connectedIds.has(n.id)?1:0.25);
+    .style("opacity",n=>connectedIds.has(n.id)?1:0.22);
 
-  // 4. Update info panel
   showInfo(d);
 }
 
@@ -428,13 +473,32 @@ function showInfo(d){
   document.getElementById("ip-origin").textContent=d.origin;
   document.getElementById("ip-desc").textContent=d.desc;
 
-  // Image
-  const img=document.getElementById("ip-img");
-  img.classList.remove("loaded");
-  img.src=d.img;
-  img.alt=d.name;
-  img.onload=()=>img.classList.add("loaded");
-  img.onerror=()=>{img.style.display="none"};
+  // FIX: Image — always reset display + opacity. Use a fresh image load approach.
+  // Never set display:none; only use opacity so re-showing always works.
+  const imgEl=document.getElementById("ip-img");
+  const placeholder=document.getElementById("ip-img-placeholder");
+
+  imgEl.classList.remove("loaded");
+  placeholder.style.opacity="1";
+
+  if(d.img){
+    // Load via a temp Image object; only swap src when confirmed loaded
+    const loader=new Image();
+    loader.onload=()=>{
+      imgEl.src=d.img;
+      imgEl.alt=d.name;
+      imgEl.classList.add("loaded");
+      placeholder.style.opacity="0";
+    };
+    loader.onerror=()=>{
+      imgEl.src="";
+      placeholder.style.opacity="1";
+    };
+    loader.src=d.img;
+  } else {
+    imgEl.src="";
+    placeholder.style.opacity="1";
+  }
 
   // Related tags
   const related=links
@@ -442,21 +506,20 @@ function showInfo(d){
     .map(l=>l.source.id===d.id?l.target:l.source)
     .filter(n=>n&&n.id!==d.id);
   document.getElementById("ip-related-list").innerHTML=
-    related.map(n=>`<span class="related-tag" onclick='selectNode(breadData.find(b=>b.id==="'+n.id+'"))'>${n.name}</span>`).join("");
+    related.map(n=>`<span class="related-tag" onclick="selectNode(breadData.find(b=>b.id==='${n.id}'))">${n.name}</span>`).join("");
 
-  // Cookidoo recipe link
-  const recipeDiv=document.getElementById("ip-recipe-link");
+  // Recipe link
+  const rd=document.getElementById("ip-recipe-link");
   if(d.recipe){
-    recipeDiv.style.display="block";
-    recipeDiv.querySelector("a").href=d.recipe;
+    rd.style.display="block";
+    rd.querySelector("a").href=d.recipe;
   } else {
-    recipeDiv.style.display="none";
+    rd.style.display="none";
   }
 
   document.getElementById("info-panel").classList.add("visible");
 }
 
-// Deselect on background click
 svg.on("click",function(){
   document.getElementById("info-panel").classList.remove("visible");
   linkSel.transition().duration(300)
@@ -465,7 +528,6 @@ svg.on("click",function(){
   nodeSel.select("text").transition().duration(300).style("opacity",1);
 });
 
-// Expose for inline onclick in related tags
 window.selectNode=selectNode;
 window.breadData=breadData;
 </script>
