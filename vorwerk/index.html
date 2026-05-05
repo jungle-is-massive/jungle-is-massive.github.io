@@ -3,197 +3,300 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bread Map — Discover How Breads Evolve</title>
+<title>Bread Map — Discover How Breads Evolve | Thermomix®</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #FAF9F6;
-    --surface: #FFFFFF;
-    --border: rgba(0,0,0,0.1);
-    --text: #1a1a18;
-    --text-muted: #6b6b67;
-    --text-hint: #999992;
-    --font: 'Georgia', serif;
-    --sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  }
-  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
-  body { font-family: var(--sans); }
 
-  #app { width: 100vw; height: 100vh; position: relative; }
-  #canvas-wrap { width: 100%; height: 100%; }
+  :root {
+    --vw-green: #009a3b;
+    --vw-green-dark: #113c2b;
+    --vw-green-mid: #006e2c;
+    --vw-lime: #95c11c;
+    --vw-teal: #00777b;
+    --vw-charcoal: #4b4a4b;
+    --vw-grey: #6d6e71;
+    --vw-light-grey: #b1b2b3;
+    --vw-bg: #f5f5f3;
+    --vw-white: #ffffff;
+    --font-body: 'Source Sans 3', 'SourceSansRegular', Arial, Helvetica, sans-serif;
+    --font-display: 'Merriweather', Georgia, serif;
+  }
+
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--vw-bg); }
+  body { font-family: var(--font-body); color: var(--vw-charcoal); }
+
+  #app { width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; }
+
+  /* ── Header ── */
+  #header {
+    flex-shrink: 0;
+    background: var(--vw-green-dark);
+    padding: 0 28px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 20;
+  }
+  #header-left { display: flex; align-items: center; gap: 16px; }
+  #header-logo {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--vw-white);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-right: 1px solid rgba(255,255,255,0.2);
+    padding-right: 16px;
+  }
+  #header-logo span { color: var(--vw-lime); }
+  #header-title {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 0.04em;
+  }
+  #header-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--vw-green-dark);
+    background: var(--vw-lime);
+    padding: 4px 12px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ── Canvas ── */
+  #canvas-wrap { flex: 1; position: relative; overflow: hidden; }
   svg { width: 100%; height: 100%; }
 
+  /* ── Node labels ── */
   .node-label {
-    font-size: 11px;
+    font-size: 10.5px;
     fill: #fff;
-    font-family: var(--sans);
+    font-family: var(--font-body);
     pointer-events: none;
     text-anchor: middle;
     dominant-baseline: central;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 0.01em;
   }
 
-  .node circle { cursor: pointer; }
-
-  #header {
-    position: absolute;
-    top: 20px;
-    left: 24px;
-    z-index: 10;
-  }
-  #header h1 {
-    font-family: var(--font);
-    font-size: 22px;
-    font-weight: normal;
-    color: var(--text);
-    letter-spacing: -0.02em;
-  }
-  #header p {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 3px;
-  }
-
+  /* ── Info Panel ── */
   #info-panel {
     position: absolute;
-    top: 80px;
-    right: 20px;
-    width: 240px;
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
+    top: 16px;
+    right: 16px;
+    width: 256px;
+    background: var(--vw-white);
+    border-top: 3px solid var(--vw-green);
+    border-radius: 0 0 4px 4px;
+    padding: 18px 20px 20px;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateY(-6px);
     pointer-events: none;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    box-shadow: 0 4px 24px rgba(17,60,43,0.12);
   }
-  #info-panel.visible { opacity: 1; pointer-events: auto; }
-  #ip-badge {
+  #info-panel.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  #ip-family-tag {
     display: inline-block;
-    font-size: 10px;
-    padding: 2px 10px;
-    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 2px;
     margin-bottom: 10px;
-    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
   }
   #ip-name {
-    font-family: var(--font);
-    font-size: 18px;
-    font-weight: normal;
-    color: var(--text);
-    margin-bottom: 3px;
-    line-height: 1.3;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--vw-green-dark);
+    margin-bottom: 2px;
+    line-height: 1.25;
   }
   #ip-origin {
     font-size: 11px;
-    color: var(--text-muted);
-    margin-bottom: 10px;
+    color: var(--vw-light-grey);
+    margin-bottom: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.09em;
+    font-weight: 600;
   }
   #ip-desc {
     font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.6;
+    color: var(--vw-grey);
+    line-height: 1.65;
+    border-top: 1px solid #e8e8e6;
+    padding-top: 12px;
   }
-  #ip-related { margin-top: 12px; border-top: 0.5px solid var(--border); padding-top: 10px; }
-  #ip-related p { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-hint); margin-bottom: 6px; }
-  #ip-related-list { display: flex; flex-wrap: wrap; gap: 4px; }
+  #ip-related { margin-top: 14px; }
+  #ip-related-label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--vw-light-grey);
+    margin-bottom: 7px;
+  }
+  #ip-related-list { display: flex; flex-wrap: wrap; gap: 5px; }
   .related-tag {
     font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    background: #F1EFE8;
-    color: #444441;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 2px;
+    background: #f0f7f2;
+    color: var(--vw-green-mid);
     cursor: pointer;
+    border: 1px solid #c8e6d2;
+    transition: background 0.15s;
+    font-family: var(--font-body);
   }
+  .related-tag:hover { background: #d6f0e0; }
 
+  /* ── Legend ── */
   #legend {
     position: absolute;
-    bottom: 20px;
-    left: 24px;
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    border-radius: 12px;
+    bottom: 16px;
+    left: 16px;
+    background: var(--vw-white);
+    border-left: 3px solid var(--vw-green);
+    border-radius: 0 4px 4px 0;
     padding: 12px 16px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px rgba(17,60,43,0.08);
   }
-  #legend-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-hint); margin-bottom: 8px; }
-  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12px; color: var(--text); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  #legend-title {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--vw-light-grey);
+    margin-bottom: 9px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12px; color: var(--vw-charcoal); font-weight: 400; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 
+  /* ── Hint ── */
   #hint {
     position: absolute;
-    bottom: 20px;
-    right: 20px;
+    bottom: 16px;
+    right: 16px;
     font-size: 11px;
-    color: var(--text-hint);
-    background: var(--surface);
+    color: var(--vw-light-grey);
+    background: var(--vw-white);
     padding: 5px 12px;
-    border-radius: 20px;
-    border: 0.5px solid var(--border);
+    border-radius: 2px;
+    border: 1px solid #e8e8e6;
+    letter-spacing: 0.03em;
   }
+
+  /* ── Thermomix CTA strip ── */
+  #cta-strip {
+    flex-shrink: 0;
+    background: var(--vw-green);
+    padding: 10px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #cta-strip p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.9);
+    font-weight: 300;
+  }
+  #cta-strip strong { font-weight: 700; color: #fff; }
+  #cta-btn {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--vw-green-dark);
+    background: var(--vw-white);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 2px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 24px;
+    text-decoration: none;
+    display: inline-block;
+  }
+  #cta-btn:hover { background: var(--vw-lime); }
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="canvas-wrap">
-    <svg id="svg"></svg>
-  </div>
 
   <div id="header">
-    <h1>Bread Map</h1>
-    <p>Explore how the world's breads evolve from each other</p>
-  </div>
-
-  <div id="info-panel">
-    <div id="ip-badge"></div>
-    <div id="ip-name"></div>
-    <div id="ip-origin"></div>
-    <p id="ip-desc"></p>
-    <div id="ip-related">
-      <p>related breads</p>
-      <div id="ip-related-list"></div>
+    <div id="header-left">
+      <div id="header-logo">Vorwerk <span>®</span></div>
+      <div id="header-title">Thermomix® Bread Map</div>
     </div>
+    <div id="header-badge">Discover Every Loaf</div>
   </div>
 
-  <div id="legend">
-    <div id="legend-title">leavening family</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>sourdough</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#378ADD"></div>commercial yeast</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#D85A30"></div>flatbread</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#BA7517"></div>chemically leavened</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#D4537E"></div>enriched dough</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#888780"></div>steamed</div>
+  <div id="canvas-wrap">
+    <svg id="svg"></svg>
+
+    <div id="info-panel">
+      <div id="ip-family-tag"></div>
+      <div id="ip-name"></div>
+      <div id="ip-origin"></div>
+      <p id="ip-desc"></p>
+      <div id="ip-related">
+        <div id="ip-related-label">Related breads</div>
+        <div id="ip-related-list"></div>
+      </div>
+    </div>
+
+    <div id="legend">
+      <div id="legend-title">Leavening family</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#009a3b"></div>Sourdough</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#00777b"></div>Commercial yeast</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#95c11c"></div>Flatbread</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#a09658"></div>Chemically leavened</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#113c2b"></div>Enriched dough</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6d6e71"></div>Steamed</div>
+    </div>
+
+    <div id="hint">drag · click · scroll to zoom</div>
   </div>
 
-  <div id="hint">drag · click · scroll to zoom</div>
+  <div id="cta-strip">
+    <p><strong>Make every bread at home.</strong> The Thermomix® TM7 kneads, proves and guides you through 100,000+ recipes.</p>
+    <a id="cta-btn" href="https://www.vorwerk.com/gb/en/c/home/products/thermomix/thermomix-tm7" target="_blank">Explore TM7</a>
+  </div>
+
 </div>
 
 <script>
 const breads = [
-  { id: "sourdough", name: "Sourdough", family: "sourdough", origin: "Global", desc: "Wild-fermented leavened bread with complex tang. The ancestor of most modern leavened breads.", size: 30 },
+  { id: "sourdough", name: "Sourdough", family: "sourdough", origin: "Global", desc: "Wild-fermented leavened bread with complex tang. The ancestor of most modern leavened breads — and ideal for the Thermomix® fermentation programs.", size: 30 },
   { id: "levain", name: "Pain au Levain", family: "sourdough", origin: "France", desc: "French sourdough with open crumb and chewy crust. Slightly milder than San Francisco style.", size: 18 },
   { id: "rye", name: "Rye Bread", family: "sourdough", origin: "Northern Europe", desc: "Dense, moist loaf made with rye flour. Requires sourdough because rye needs long fermentation.", size: 20 },
   { id: "pumpernickel", name: "Pumpernickel", family: "sourdough", origin: "Germany", desc: "Very dark rye loaf, steamed for up to 24 hours. Intensely earthy and slightly sweet.", size: 16 },
   { id: "einkorn", name: "Einkorn Loaf", family: "sourdough", origin: "Ancient Near East", desc: "Made from ancient wheat. Nutty, golden, and naturally easier to digest.", size: 13 },
   { id: "injera", name: "Injera", family: "sourdough", origin: "Ethiopia", desc: "Spongy sourdough flatbread made from teff. The plate, utensil, and bread all in one.", size: 16 },
-  { id: "baguette", name: "Baguette", family: "yeast", origin: "France", desc: "Iconic long thin loaf. Crisp crust, open airy crumb. The benchmark for commercial yeast technique.", size: 26 },
+  { id: "baguette", name: "Baguette", family: "yeast", origin: "France", desc: "Iconic long thin loaf. Crisp crust, airy crumb. The benchmark for commercial yeast technique.", size: 26 },
   { id: "ciabatta", name: "Ciabatta", family: "yeast", origin: "Italy", desc: "High-hydration loaf with irregular holes. Invented in 1982 to rival the baguette.", size: 20 },
   { id: "focaccia", name: "Focaccia", family: "yeast", origin: "Italy", desc: "Thick, oily flatbread dimpled by hand. Often topped with herbs, olives, or tomatoes.", size: 20 },
-  { id: "poolish", name: "Pain Poolish", family: "yeast", origin: "Poland / France", desc: "Uses a pre-ferment for deeper flavour. A bridge between commercial yeast and sourdough.", size: 14 },
+  { id: "poolish", name: "Pain Poolish", family: "yeast", origin: "Poland / France", desc: "Uses a pre-ferment for deeper flavour — a bridge between commercial yeast and sourdough.", size: 14 },
   { id: "bialy", name: "Bialy", family: "yeast", origin: "Poland", desc: "Chewy roll with a depression filled with onion. Related to the bagel but never boiled.", size: 13 },
-  { id: "bagel", name: "Bagel", family: "yeast", origin: "Poland", desc: "Boiled then baked ring. Dense, chewy, with a shiny crust. Classic New York street food.", size: 18 },
+  { id: "bagel", name: "Bagel", family: "yeast", origin: "Poland", desc: "Boiled then baked ring. Dense, chewy, shiny crust. A New York classic.", size: 18 },
   { id: "pita", name: "Pita", family: "flatbread", origin: "Middle East", desc: "Leavened flatbread that puffs into a pocket when baked at high heat.", size: 22 },
   { id: "naan", name: "Naan", family: "flatbread", origin: "South Asia", desc: "Soft, blistered flatbread baked on the walls of a tandoor oven. Enriched with yoghurt.", size: 22 },
   { id: "lavash", name: "Lavash", family: "flatbread", origin: "Armenia", desc: "Thin unleavened sheet bread. One of the oldest breads in the world.", size: 16 },
   { id: "chapati", name: "Chapati", family: "flatbread", origin: "South Asia", desc: "Unleavened wholegrain flatbread cooked on a griddle. Puffs up from steam.", size: 16 },
   { id: "tortilla", name: "Flour Tortilla", family: "flatbread", origin: "Mexico", desc: "Soft unleavened round made with fat. Evolved from indigenous corn tortillas.", size: 18 },
-  { id: "soda", name: "Soda Bread", family: "chemical", origin: "Ireland", desc: "Leavened by bicarbonate of soda reacting with buttermilk. No yeast, no kneading, no waiting.", size: 20 },
+  { id: "soda", name: "Soda Bread", family: "chemical", origin: "Ireland", desc: "Leavened by bicarbonate of soda reacting with buttermilk. No yeast, no waiting.", size: 20 },
   { id: "cornbread", name: "Cornbread", family: "chemical", origin: "USA", desc: "Chemically leavened with baking powder. Crumbly, slightly sweet Southern staple.", size: 18 },
   { id: "scone", name: "Scone", family: "chemical", origin: "Scotland", desc: "Butter-rubbed, baking-powder-leavened quick bread. Richer and more buttery than soda bread.", size: 16 },
   { id: "banana_bread", name: "Banana Bread", family: "chemical", origin: "USA", desc: "Moist loaf leavened by baking soda. Technically a quick bread, culturally a cake.", size: 14 },
@@ -202,7 +305,7 @@ const breads = [
   { id: "panettone", name: "Panettone", family: "enriched", origin: "Italy", desc: "Tall dome-shaped Christmas bread enriched with candied peel and raisins. Uses sourdough starter.", size: 16 },
   { id: "milk_bread", name: "Milk Bread", family: "enriched", origin: "Japan", desc: "Ultra-soft loaf using tangzhong (cooked flour paste). Pillowy texture, slightly sweet.", size: 18 },
   { id: "mantou", name: "Mantou", family: "steamed", origin: "China", desc: "Plain steamed bun made with wheat flour. Soft, white, and slightly chewy.", size: 18 },
-  { id: "baozi", name: "Baozi", family: "steamed", origin: "China", desc: "Filled steamed bun. Evolved from mantou by adding meat or sweet fillings inside.", size: 16 },
+  { id: "baozi", name: "Baozi", family: "steamed", origin: "China", desc: "Filled steamed bun. Evolved from mantou by adding meat or sweet fillings.", size: 16 },
   { id: "idli", name: "Idli", family: "steamed", origin: "South India", desc: "Fermented rice and lentil cake, steamed in moulds. Light and very digestible.", size: 14 },
 ];
 
@@ -236,28 +339,29 @@ const links = [
   { source: "focaccia", target: "pita" },
 ];
 
-const familyColors = {
-  sourdough: { fill: "#1D9E75", stroke: "#0F6E56", badge: "#E1F5EE", badgeText: "#085041" },
-  yeast:     { fill: "#378ADD", stroke: "#185FA5", badge: "#E6F1FB", badgeText: "#0C447C" },
-  flatbread: { fill: "#D85A30", stroke: "#993C1D", badge: "#FAECE7", badgeText: "#712B13" },
-  chemical:  { fill: "#BA7517", stroke: "#854F0B", badge: "#FAEEDA", badgeText: "#633806" },
-  enriched:  { fill: "#D4537E", stroke: "#993356", badge: "#FBEAF0", badgeText: "#72243E" },
-  steamed:   { fill: "#888780", stroke: "#5F5E5A", badge: "#F1EFE8", badgeText: "#444441" },
+const familyStyles = {
+  sourdough: { fill: "#009a3b", stroke: "#006e2c", badge: "#e6f5ed", badgeText: "#006e2c" },
+  yeast:     { fill: "#00777b", stroke: "#005558", badge: "#e4f3f3", badgeText: "#005558" },
+  flatbread: { fill: "#7aaa18", stroke: "#5a8010", badge: "#f0f8e0", badgeText: "#4a6a0d" },
+  chemical:  { fill: "#a09658", stroke: "#7a7040", badge: "#f5f2e8", badgeText: "#6a6030" },
+  enriched:  { fill: "#113c2b", stroke: "#0a2419", badge: "#e8f0ec", badgeText: "#113c2b" },
+  steamed:   { fill: "#6d6e71", stroke: "#4b4a4b", badge: "#f0f0f0", badgeText: "#4b4a4b" },
 };
 
-const W = window.innerWidth, H = window.innerHeight;
+const W = window.innerWidth;
+const H = window.innerHeight - 60 - 48; // minus header and CTA
 const svg = d3.select("#svg").attr("viewBox", `0 0 ${W} ${H}`);
 const g = svg.append("g");
 
 const sim = d3.forceSimulation(breads)
-  .force("link", d3.forceLink(links).id(d => d.id).distance(90).strength(0.4))
-  .force("charge", d3.forceManyBody().strength(-300))
+  .force("link", d3.forceLink(links).id(d => d.id).distance(95).strength(0.38))
+  .force("charge", d3.forceManyBody().strength(-310))
   .force("center", d3.forceCenter(W / 2, H / 2))
-  .force("collision", d3.forceCollide().radius(d => d.size + 20));
+  .force("collision", d3.forceCollide().radius(d => d.size + 22));
 
 const linkSel = g.append("g")
   .selectAll("line").data(links).join("line")
-  .attr("stroke", "#C8C6BC").attr("stroke-width", 1).attr("stroke-opacity", 0.6);
+  .attr("stroke", "#c8cfc8").attr("stroke-width", 1).attr("stroke-opacity", 0.55);
 
 const nodeSel = g.append("g")
   .selectAll("g").data(breads).join("g").attr("class", "node")
@@ -266,33 +370,45 @@ const nodeSel = g.append("g")
     .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
     .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
   )
-  .on("click", (e, d) => showInfo(d));
+  .on("click", (e, d) => { e.stopPropagation(); showInfo(d); });
 
 nodeSel.append("circle")
   .attr("r", d => d.size)
-  .attr("fill", d => familyColors[d.family].fill)
-  .attr("stroke", d => familyColors[d.family].stroke)
-  .attr("stroke-width", 1.5)
-  .attr("fill-opacity", 0.9);
+  .attr("fill", d => familyStyles[d.family].fill)
+  .attr("stroke", d => familyStyles[d.family].stroke)
+  .attr("stroke-width", 1.5);
 
 nodeSel.append("text").attr("class", "node-label")
-  .style("font-size", d => d.size >= 20 ? "11px" : "9.5px")
-  .text(d => d.name.split(" ")[0] === "Pain" ? d.name.split(" ").slice(0,2).join(" ") : d.name.split(" ")[0]);
+  .style("font-size", d => d.size >= 20 ? "10.5px" : "9px")
+  .text(d => {
+    const parts = d.name.split(" ");
+    if (d.name === "Pain au Levain") return "Pain au Levain";
+    if (d.name === "Pain Poolish") return "Pain Poolish";
+    if (d.name === "Flour Tortilla") return "Tortilla";
+    if (d.name === "Banana Bread") return "Banana Bread";
+    if (d.name === "Milk Bread") return "Milk Bread";
+    if (d.name === "Soda Bread") return "Soda Bread";
+    return d.name;
+  });
 
 sim.on("tick", () => {
-  linkSel.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
-  nodeSel.attr("transform", d => `translate(${Math.max(d.size+2, Math.min(W-d.size-2, d.x))},${Math.max(d.size+2, Math.min(H-d.size-2, d.y))})`);
+  linkSel
+    .attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+    .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+  nodeSel.attr("transform", d =>
+    `translate(${Math.max(d.size+2, Math.min(W-d.size-2, d.x))},${Math.max(d.size+2, Math.min(H-d.size-2, d.y))})`
+  );
 });
 
-const zoom = d3.zoom().scaleExtent([0.4, 4]).on("zoom", e => g.attr("transform", e.transform));
+const zoom = d3.zoom().scaleExtent([0.35, 4]).on("zoom", e => g.attr("transform", e.transform));
 svg.call(zoom);
 
 function showInfo(d) {
-  const col = familyColors[d.family];
-  const badge = document.getElementById("ip-badge");
-  badge.textContent = d.family;
-  badge.style.background = col.badge;
-  badge.style.color = col.badgeText;
+  const s = familyStyles[d.family];
+  const tag = document.getElementById("ip-family-tag");
+  tag.textContent = d.family;
+  tag.style.background = s.badge;
+  tag.style.color = s.badgeText;
   document.getElementById("ip-name").textContent = d.name;
   document.getElementById("ip-origin").textContent = d.origin;
   document.getElementById("ip-desc").textContent = d.desc;
@@ -300,28 +416,29 @@ function showInfo(d) {
   const related = links
     .filter(l => l.source.id === d.id || l.target.id === d.id)
     .map(l => l.source.id === d.id ? l.target : l.source)
-    .filter(n => n.id !== d.id);
-  const relList = document.getElementById("ip-related-list");
-  relList.innerHTML = related.map(n => `<span class="related-tag" onclick="showInfo(breads.find(b=>b.id==='${n.id}'))">${n.name}</span>`).join("");
+    .filter(n => n && n.id !== d.id);
+  document.getElementById("ip-related-list").innerHTML =
+    related.map(n => `<span class="related-tag" onclick="showInfo(breads.find(b=>b.id==='${n.id}'))">${n.name}</span>`).join("");
 
   document.getElementById("info-panel").classList.add("visible");
 
   linkSel
-    .attr("stroke", l => (l.source.id === d.id || l.target.id === d.id) ? col.fill : "#C8C6BC")
+    .attr("stroke", l => (l.source.id === d.id || l.target.id === d.id) ? s.fill : "#c8cfc8")
     .attr("stroke-width", l => (l.source.id === d.id || l.target.id === d.id) ? 2.5 : 1)
-    .attr("stroke-opacity", l => (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.3);
+    .attr("stroke-opacity", l => (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.25);
   nodeSel.select("circle").attr("opacity", n => {
     if (n.id === d.id) return 1;
-    return links.some(l => (l.source.id === d.id && l.target.id === n.id) || (l.target.id === d.id && l.source.id === n.id)) ? 0.9 : 0.3;
+    return links.some(l =>
+      (l.source.id === d.id && l.target.id === n.id) ||
+      (l.target.id === d.id && l.source.id === n.id)
+    ) ? 0.95 : 0.25;
   });
 }
 
-svg.on("click.bg", function(e) {
-  if (e.target === this) {
-    document.getElementById("info-panel").classList.remove("visible");
-    linkSel.attr("stroke", "#C8C6BC").attr("stroke-width", 1).attr("stroke-opacity", 0.6);
-    nodeSel.select("circle").attr("opacity", 1);
-  }
+svg.on("click", function() {
+  document.getElementById("info-panel").classList.remove("visible");
+  linkSel.attr("stroke", "#c8cfc8").attr("stroke-width", 1).attr("stroke-opacity", 0.55);
+  nodeSel.select("circle").attr("opacity", 1);
 });
 </script>
 </body>
